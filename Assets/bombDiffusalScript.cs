@@ -15,6 +15,35 @@ public class bombDiffusalScript : MonoBehaviour
 	public TextMesh licenseNoText;
 	public GameObject[] plates;
 
+	public GameObject[] menus; 
+
+	public Material[] usa1;
+	public Material[] usa2;
+	public Material[] america;
+	public Material[] eurasia;
+	public Material[] africa;
+	public Material[] space;
+
+	public KMSelectable destinationButton;
+	public KMSelectable componentButton;
+	public KMSelectable goButton;
+
+	public KMSelectable nextSector;
+	public KMSelectable prevSector;
+	public KMSelectable nextArea;
+	public KMSelectable prevArea;
+	public KMSelectable destinationBack;
+
+	public KMSelectable addBattery;
+	public KMSelectable subBattery;
+	public KMSelectable addIndicator;
+	public KMSelectable subIndicator;
+	public KMSelectable nextPort;
+	public KMSelectable prevPort;
+	public KMSelectable addManual;
+	public KMSelectable subManual;
+	public KMSelectable componentBack;
+
 	//Logging
 	static int moduleIdCounter = 1;
     int moduleId;
@@ -30,10 +59,98 @@ public class bombDiffusalScript : MonoBehaviour
 	int port;
 	int manuals;
 
+	int selectedDestination = -1;
+	int selectedBatteries = -1;
+	int selectedIndicators = -1;
+	int selectedPort = -1;
+	int selectedManuals = -1;
+
 	void Awake()
 	{
 		moduleId = moduleIdCounter++;
-		//btn.OnInteract += delegate () { PressButton(); return false; };
+		destinationButton.OnInteract += delegate () { OpenDestinationMenu(); return false; };
+		componentButton.OnInteract += delegate () { OpenComponentMenu(); return false; };
+		destinationBack.OnInteract += delegate () { OpenMainMenu(); return false; };
+		componentBack.OnInteract += delegate () { OpenMainMenu(); return false; };
+		nextSector.OnInteract += delegate () { ChangeSector(1); return false; };
+		prevSector.OnInteract += delegate () { ChangeSector(-1); return false; };
+		nextArea.OnInteract += delegate () { ChangeArea(1); return false; };
+		prevArea.OnInteract += delegate () { ChangeArea(-1); return false; };
+	}
+
+	void OpenDestinationMenu()
+	{
+		if(selectedDestination == -1)
+			selectedDestination = 100;
+
+		menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
+		menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
+		menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+
+		menus[0].SetActive(false);
+		menus[1].SetActive(true);
+	}
+
+	void OpenComponentMenu()
+	{
+		if(selectedBatteries == -1)
+		{
+			selectedBatteries = 0;
+			selectedIndicators = 0;
+			selectedPort = 0;
+			selectedManuals = 0;
+		}
+
+		menus[2].transform.Find("batteries").gameObject.GetComponentInChildren<TextMesh>().text = "Batteries: " + selectedBatteries;
+		menus[2].transform.Find("indicators").gameObject.GetComponentInChildren<TextMesh>().text = "Indicators: " + selectedIndicators;
+		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = GetPortName(selectedPort);
+		menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
+
+		menus[0].SetActive(false);
+		menus[2].SetActive(true);
+	}
+
+	void OpenMainMenu()
+	{
+		menus[0].transform.Find("destination").gameObject.GetComponentInChildren<TextMesh>().text = "Sector: " + GetSectorName(selectedDestination / 100) + "\nArea: " + GetAreaName(selectedDestination);
+		menus[0].transform.Find("specs").gameObject.GetComponentInChildren<TextMesh>().text = "\nComponents: " + (selectedBatteries != -1 ? selectedBatteries + "" : "?") + "/" + (selectedIndicators != -1 ? selectedIndicators + "" : "?") + "/" + (selectedManuals != -1 ? selectedManuals + "" : "?") +
+																							  "\nPort: " + GetPortName(selectedPort);
+
+		menus[1].SetActive(false);
+		menus[2].SetActive(false);
+		menus[0].SetActive(true);
+	}
+
+	void ChangeSector(int i)
+	{
+		selectedDestination += i * 100;
+
+		if(selectedDestination >= 700)
+			selectedDestination -= 600;
+		if(selectedDestination < 100)
+			selectedDestination += 600;
+
+		menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
+		menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
+		menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+	}
+
+	void ChangeArea(int i)
+	{
+		selectedDestination += i;
+
+		if(selectedDestination % 10 == 5)
+			selectedDestination += 5;
+		if(selectedDestination % 10 == 9)
+			selectedDestination -= 5;
+		if((selectedDestination % 100) / 10 == 5)
+			selectedDestination = (selectedDestination / 100) * 100;
+		if((selectedDestination % 100) / 10 == 9)
+			selectedDestination = (selectedDestination / 100) * 100 + 144;
+
+		menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
+		menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
+		menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
 	}
 
 	void Start () 
@@ -42,6 +159,9 @@ public class bombDiffusalScript : MonoBehaviour
 		GenerateNumbers();
 		CalcDestination();
 		CalcComponents();
+
+		menus[1].SetActive(false);
+		menus[2].SetActive(false);
 	}
 
 	void SetUpPorts()
@@ -279,7 +399,7 @@ public class bombDiffusalScript : MonoBehaviour
 			case 12: return "PCMCIA";
 		}
 
-		return "";
+		return "???";
 	}
 
 	String GetValues(char[] array)
@@ -318,7 +438,7 @@ public class bombDiffusalScript : MonoBehaviour
 			case 6: return "Space";
 		}
 
-		return "";
+		return "???";
 	}
 
 	String GetAreaName(int area)
@@ -482,6 +602,21 @@ public class bombDiffusalScript : MonoBehaviour
 			case 644: return "Kepler-452b";
 		}
 
-		return "";
+		return "???";
+	}
+
+	Material GetFlag(int dest)
+	{
+		switch(dest / 100)
+		{
+			case 1: return usa1[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 2: return usa2[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 3: return america[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 4: return eurasia[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 5: return africa[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 6: return space[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+		}
+
+		return null;
 	}
 }
