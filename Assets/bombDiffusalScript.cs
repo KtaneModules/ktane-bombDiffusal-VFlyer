@@ -47,7 +47,6 @@ public class bombDiffusalScript : MonoBehaviour
 	//Logging
 	static int moduleIdCounter = 1;
     int moduleId;
-    private bool moduleSolved;
 
 	int port1, port2;
 	String[] ports;
@@ -243,7 +242,6 @@ public class bombDiffusalScript : MonoBehaviour
 			return;
 		}
 
-		moduleSolved = true;
 		Debug.LogFormat("[Bomb Diffusal #{0}] Input is correct. Module solved.", moduleId, selectedManuals, manuals);
 		GetComponent<KMBombModule>().HandlePass();
 
