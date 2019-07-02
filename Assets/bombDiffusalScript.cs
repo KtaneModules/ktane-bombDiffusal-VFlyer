@@ -114,6 +114,9 @@ public class bombDiffusalScript : MonoBehaviour
 		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
 		menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
 
+		if(menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text == "PS2")
+			menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = "PS/2";
+
 		menus[0].SetActive(false);
 		menus[2].SetActive(true);
 	}
@@ -195,6 +198,9 @@ public class bombDiffusalScript : MonoBehaviour
 			selectedPort = 0;
 
 		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
+	
+		if(menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text == "PS2")
+			menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = "PS/2";
 	}
 
 	void ChangeManuals(int i)
