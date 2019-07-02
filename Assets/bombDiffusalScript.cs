@@ -84,6 +84,7 @@ public class bombDiffusalScript : MonoBehaviour
 		prevPort.OnInteract += delegate () { ChangePorts(-1); return false; };
 		addManual.OnInteract += delegate () { ChangeManuals(1); return false; };
 		subManual.OnInteract += delegate () { ChangeManuals(-1); return false; };
+		goButton.OnInteract += delegate () { CheckSolution(); return false; };
 	}
 
 	void OpenDestinationMenu()
@@ -122,7 +123,7 @@ public class bombDiffusalScript : MonoBehaviour
 	{
 		menus[0].transform.Find("destination").gameObject.GetComponentInChildren<TextMesh>().text = "Sector: " + GetSectorName(selectedDestination / 100) + "\nArea: " + GetAreaName(selectedDestination);
 		menus[0].transform.Find("specs").gameObject.GetComponentInChildren<TextMesh>().text = "\nComponents: " + (selectedBatteries != -1 ? selectedBatteries + "" : "?") + "/" + (selectedIndicators != -1 ? selectedIndicators + "" : "?") + "/" + (selectedManuals != -1 ? selectedManuals + "" : "?") +
-																							  "\nPort: " + ports[selectedPort];
+																							  "\nPort: " + (selectedPort != -1 ? ports[selectedPort] : "???");
 
 		menus[1].SetActive(false);
 		menus[2].SetActive(false);
@@ -207,6 +208,48 @@ public class bombDiffusalScript : MonoBehaviour
 			selectedManuals = 9;
 
 		menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
+	}
+
+	void CheckSolution()
+	{
+		if(destination != selectedDestination)
+		{
+        	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected destination was {1}. Expected {2}.", moduleId, GetAreaName(selectedDestination), GetAreaName(destination));
+            GetComponent<KMBombModule>().HandleStrike();
+			return;
+		}
+		if(batteries != selectedBatteries)
+		{
+        	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} batteries. Expected {2}.", moduleId, selectedBatteries, batteries);
+            GetComponent<KMBombModule>().HandleStrike();
+			return;
+		}
+		if(indicators != selectedIndicators)
+		{
+        	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} indicators. Expected {2}.", moduleId, selectedIndicators, indicators);
+            GetComponent<KMBombModule>().HandleStrike();
+			return;
+		}
+		if(port != selectedPort)
+		{
+        	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} port. Expected {2} port.", moduleId, ports[selectedPort], ports[port]);
+            GetComponent<KMBombModule>().HandleStrike();
+			return;
+		}
+		if(manuals != selectedManuals)
+		{
+        	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} manuals. Expected {2}.", moduleId, selectedManuals, manuals);
+            GetComponent<KMBombModule>().HandleStrike();
+			return;
+		}
+
+		moduleSolved = true;
+		Debug.LogFormat("[Bomb Diffusal #{0}] Input is correct. Module solved.", moduleId, selectedManuals, manuals);
+		GetComponent<KMBombModule>().HandlePass();
+
+		goButton.gameObject.SetActive(false);
+		destinationButton.gameObject.SetActive(false);
+		componentButton.gameObject.SetActive(false);
 	}
 
 	void Start () 
