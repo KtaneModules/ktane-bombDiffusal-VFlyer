@@ -13,12 +13,14 @@ public class bombDiffusalScript : MonoBehaviour
     static System.Random rnd = new System.Random();
 
 	public TextMesh licenseNoText;
+	public GameObject[] plates;
 
 	//Logging
 	static int moduleIdCounter = 1;
     int moduleId;
     private bool moduleSolved;
 
+	int port1, port2;
 	String licenseNo;
 	List<int> deliveryNo;
 	int destination;
@@ -31,8 +33,20 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void Start () 
 	{
+		SetUpPorts();
 		GenerateNumbers();
 		CalcDestination();
+	}
+
+	void SetUpPorts()
+	{
+		port1 = rnd.Next() % 13;
+		port2 = rnd.Next() % 13;
+
+        Debug.LogFormat("[Bomb Diffusal #{0}] Port 1 is {1}. Port 2 is {2}.", moduleId, GetPortName(port1), GetPortName(port2));
+		
+		plates[0].transform.Find(GetPortName(port1)).gameObject.SetActive(true);
+		plates[1].transform.Find(GetPortName(port2)).gameObject.SetActive(true);
 	}
 	
 	void GenerateNumbers()
@@ -176,6 +190,28 @@ public class bombDiffusalScript : MonoBehaviour
 			if(deliveryNo.FindAll(x => x == n).Count() == 1) return false;
 
 		return true;
+	}
+
+	String GetPortName(int port)
+	{
+		switch(port)
+		{
+			case 0: return "PS2";
+			case 1: return "Serial";
+			case 2: return "Parallel";
+			case 3: return "AC Power";
+			case 4: return "HDMI";
+			case 5: return "VGA";
+			case 6: return "USB";
+			case 7: return "RJ-45";
+			case 8: return "DVI-D";
+			case 9: return "Stereo RCA";
+			case 10: return "Component Video";
+			case 11: return "Composite Video";
+			case 12: return "PCMCIA";
+		}
+
+		return "";
 	}
 
 	String GetValues(char[] array)

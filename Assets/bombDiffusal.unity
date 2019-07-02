@@ -169,6 +169,10 @@ Prefab:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1523235765830668, guid: d17a903ff033d184d9cbd60b280b98a2, type: 2}
+      propertyPath: m_Name
+      value: RJ-45
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d17a903ff033d184d9cbd60b280b98a2, type: 2}
   m_IsPrefabParent: 0
@@ -232,6 +236,10 @@ Prefab:
       propertyPath: m_LocalScale.z
       value: 285.7143
       objectReference: {fileID: 0}
+    - target: {fileID: 1975537487187542, guid: e61bbcc02c3cd4e449bbd819929760fa, type: 2}
+      propertyPath: m_Name
+      value: DVI-D
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e61bbcc02c3cd4e449bbd819929760fa, type: 2}
   m_IsPrefabParent: 0
@@ -276,6 +284,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114189083327926310, guid: 52a5b78c9e78e1f40b89b848dc2909cb,
+        type: 2}
+      propertyPath: plates.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 114106750372550374, guid: 52a5b78c9e78e1f40b89b848dc2909cb,
         type: 2}
       propertyPath: Children.Array.size
@@ -348,6 +361,16 @@ Prefab:
       propertyPath: licenseNoText
       value: 
       objectReference: {fileID: 1741654823}
+    - target: {fileID: 114189083327926310, guid: 52a5b78c9e78e1f40b89b848dc2909cb,
+        type: 2}
+      propertyPath: plates.Array.data[0]
+      value: 
+      objectReference: {fileID: 314194574}
+    - target: {fileID: 114189083327926310, guid: 52a5b78c9e78e1f40b89b848dc2909cb,
+        type: 2}
+      propertyPath: plates.Array.data[1]
+      value: 
+      objectReference: {fileID: 1392593307}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 52a5b78c9e78e1f40b89b848dc2909cb, type: 2}
   m_IsPrefabParent: 0
@@ -659,6 +682,10 @@ Prefab:
     - target: {fileID: 4115973331367826, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
       propertyPath: m_LocalScale.z
       value: 285.7143
+      objectReference: {fileID: 0}
+    - target: {fileID: 1013593539094864, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
+      propertyPath: m_Name
+      value: Composite Video
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
@@ -1130,6 +1157,10 @@ Prefab:
       propertyPath: m_LocalScale.z
       value: 285.7143
       objectReference: {fileID: 0}
+    - target: {fileID: 1975537487187542, guid: e61bbcc02c3cd4e449bbd819929760fa, type: 2}
+      propertyPath: m_Name
+      value: DVI-D
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e61bbcc02c3cd4e449bbd819929760fa, type: 2}
   m_IsPrefabParent: 0
@@ -1382,6 +1413,10 @@ Prefab:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 90
       objectReference: {fileID: 0}
+    - target: {fileID: 1171977595015844, guid: 2c2dc2e42060a8d478d5f49b3f846e24, type: 2}
+      propertyPath: m_Name
+      value: Stereo RCA
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2c2dc2e42060a8d478d5f49b3f846e24, type: 2}
   m_IsPrefabParent: 0
@@ -1531,6 +1566,10 @@ Prefab:
     - target: {fileID: 4333010245238020, guid: d17a903ff033d184d9cbd60b280b98a2, type: 2}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1523235765830668, guid: d17a903ff033d184d9cbd60b280b98a2, type: 2}
+      propertyPath: m_Name
+      value: RJ-45
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d17a903ff033d184d9cbd60b280b98a2, type: 2}
@@ -1683,6 +1722,10 @@ Prefab:
     - target: {fileID: 4115973331367826, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
       propertyPath: m_LocalScale.z
       value: 285.7143
+      objectReference: {fileID: 0}
+    - target: {fileID: 1013593539094864, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
+      propertyPath: m_Name
+      value: Composite Video
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b29f25487e7feac43b6647e9141271f6, type: 2}
@@ -2077,9 +2120,9 @@ TextMesh:
 
     Area: ???
 
-    Batts.: ?   Inds.: ?
+    B.: ?   I.: ?   M.: ?
 
-    Ports.: ?   Mans.: ?'
+    Ports.: ?'
   m_OffsetZ: 0
   m_CharacterSize: 0.05
   m_LineSpacing: 1
@@ -2678,6 +2721,10 @@ Prefab:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1075025615773910, guid: 9aca94b324913f94a9fd6c03b275996e, type: 2}
+      propertyPath: m_Name
+      value: PS2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9aca94b324913f94a9fd6c03b275996e, type: 2}
   m_IsPrefabParent: 0
@@ -3205,6 +3252,10 @@ Prefab:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 90
       objectReference: {fileID: 0}
+    - target: {fileID: 1171977595015844, guid: 2c2dc2e42060a8d478d5f49b3f846e24, type: 2}
+      propertyPath: m_Name
+      value: Stereo RCA
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2c2dc2e42060a8d478d5f49b3f846e24, type: 2}
   m_IsPrefabParent: 0
@@ -3489,6 +3540,10 @@ Prefab:
     - target: {fileID: 4282699036649190, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
       propertyPath: m_LocalScale.z
       value: 285.7143
+      objectReference: {fileID: 0}
+    - target: {fileID: 1784245181401302, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
+      propertyPath: m_Name
+      value: Component Video
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
@@ -3791,6 +3846,10 @@ Prefab:
     - target: {fileID: 4685718733546610, guid: 9aca94b324913f94a9fd6c03b275996e, type: 2}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1075025615773910, guid: 9aca94b324913f94a9fd6c03b275996e, type: 2}
+      propertyPath: m_Name
+      value: PS2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9aca94b324913f94a9fd6c03b275996e, type: 2}
@@ -4660,6 +4719,10 @@ Prefab:
     - target: {fileID: 4282699036649190, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
       propertyPath: m_LocalScale.z
       value: 285.7143
+      objectReference: {fileID: 0}
+    - target: {fileID: 1784245181401302, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
+      propertyPath: m_Name
+      value: Component Video
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 068b7c3ff9be47942b4cc85eed4f6e04, type: 2}
