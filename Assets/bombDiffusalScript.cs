@@ -76,6 +76,14 @@ public class bombDiffusalScript : MonoBehaviour
 		prevSector.OnInteract += delegate () { ChangeSector(-1); return false; };
 		nextArea.OnInteract += delegate () { ChangeArea(1); return false; };
 		prevArea.OnInteract += delegate () { ChangeArea(-1); return false; };
+		addBattery.OnInteract += delegate () { ChangeBatteries(1); return false; };
+		subBattery.OnInteract += delegate () { ChangeBatteries(-1); return false; };
+		addIndicator.OnInteract += delegate () { ChangeIndicators(1); return false; };
+		subIndicator.OnInteract += delegate () { ChangeIndicators(-1); return false; };
+		nextPort.OnInteract += delegate () { ChangePorts(1); return false; };
+		prevPort.OnInteract += delegate () { ChangePorts(-1); return false; };
+		addManual.OnInteract += delegate () { ChangeManuals(1); return false; };
+		subManual.OnInteract += delegate () { ChangeManuals(-1); return false; };
 	}
 
 	void OpenDestinationMenu()
@@ -103,7 +111,7 @@ public class bombDiffusalScript : MonoBehaviour
 
 		menus[2].transform.Find("batteries").gameObject.GetComponentInChildren<TextMesh>().text = "Batteries: " + selectedBatteries;
 		menus[2].transform.Find("indicators").gameObject.GetComponentInChildren<TextMesh>().text = "Indicators: " + selectedIndicators;
-		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = GetPortName(selectedPort);
+		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
 		menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
 
 		menus[0].SetActive(false);
@@ -114,7 +122,7 @@ public class bombDiffusalScript : MonoBehaviour
 	{
 		menus[0].transform.Find("destination").gameObject.GetComponentInChildren<TextMesh>().text = "Sector: " + GetSectorName(selectedDestination / 100) + "\nArea: " + GetAreaName(selectedDestination);
 		menus[0].transform.Find("specs").gameObject.GetComponentInChildren<TextMesh>().text = "\nComponents: " + (selectedBatteries != -1 ? selectedBatteries + "" : "?") + "/" + (selectedIndicators != -1 ? selectedIndicators + "" : "?") + "/" + (selectedManuals != -1 ? selectedManuals + "" : "?") +
-																							  "\nPort: " + GetPortName(selectedPort);
+																							  "\nPort: " + ports[selectedPort];
 
 		menus[1].SetActive(false);
 		menus[2].SetActive(false);
@@ -151,6 +159,54 @@ public class bombDiffusalScript : MonoBehaviour
 		menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
 		menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
 		menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+	}
+
+	void ChangeBatteries(int i)
+	{
+		selectedBatteries += i;
+
+		if(selectedBatteries == -1)
+			selectedBatteries = 0;
+		if(selectedBatteries == 10)
+			selectedBatteries = 9;
+
+		menus[2].transform.Find("batteries").gameObject.GetComponentInChildren<TextMesh>().text = "Batteries: " + selectedBatteries;		
+	}
+
+	void ChangeIndicators(int i)
+	{
+		selectedIndicators += i;
+
+		if(selectedIndicators == -1)
+			selectedIndicators = 0;
+		if(selectedIndicators == 10)
+			selectedIndicators = 9;
+
+		menus[2].transform.Find("indicators").gameObject.GetComponentInChildren<TextMesh>().text = "Indicators: " + selectedIndicators;
+	}
+
+	void ChangePorts(int i)
+	{
+		selectedPort += i;
+
+		if(selectedPort == -1)
+			selectedPort = ports.Length - 1;
+		if(selectedPort == ports.Length)
+			selectedPort = 0;
+
+		menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
+	}
+
+	void ChangeManuals(int i)
+	{
+		selectedManuals += i;
+
+		if(selectedManuals == -1)
+			selectedManuals = 0;
+		if(selectedManuals == 10)
+			selectedManuals = 9;
+
+		menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
 	}
 
 	void Start () 
