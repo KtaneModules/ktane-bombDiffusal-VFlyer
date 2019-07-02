@@ -343,6 +343,11 @@ Prefab:
       propertyPath: Children.Array.data[2]
       value: 
       objectReference: {fileID: 1358427477}
+    - target: {fileID: 114189083327926310, guid: 52a5b78c9e78e1f40b89b848dc2909cb,
+        type: 2}
+      propertyPath: licenseNoText
+      value: 
+      objectReference: {fileID: 1741654823}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 52a5b78c9e78e1f40b89b848dc2909cb, type: 2}
   m_IsPrefabParent: 0
@@ -3680,7 +3685,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1741654821}
-  m_Text: 'Software License No.
+  m_Text: 'Software License No.:
 
     DK2FL4'
   m_OffsetZ: 0
