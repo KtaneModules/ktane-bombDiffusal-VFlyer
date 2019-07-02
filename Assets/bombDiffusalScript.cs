@@ -21,9 +21,14 @@ public class bombDiffusalScript : MonoBehaviour
     private bool moduleSolved;
 
 	int port1, port2;
+	String[] ports;
 	String licenseNo;
 	List<int> deliveryNo;
 	int destination;
+	int batteries;
+	int indicators;
+	int port;
+	int manuals;
 
 	void Awake()
 	{
@@ -36,6 +41,7 @@ public class bombDiffusalScript : MonoBehaviour
 		SetUpPorts();
 		GenerateNumbers();
 		CalcDestination();
+		CalcComponents();
 	}
 
 	void SetUpPorts()
@@ -87,6 +93,68 @@ public class bombDiffusalScript : MonoBehaviour
 		}
 
         Debug.LogFormat("[Bomb Diffusal #{0}] Delivery area is {1}.", moduleId, GetAreaName(destination));
+	}
+
+	void CalcComponents()
+	{
+		CalcBatteries();
+		CalcIndicators();
+		CalcPorts();
+		CalcManuals();
+	}
+
+	void CalcBatteries()
+	{
+		batteries = (bomb.GetBatteryCount() + bomb.GetBatteryHolderCount() + 1) % 10;
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of batteries is {1}.", moduleId, batteries);
+	}
+
+	void CalcIndicators()
+	{
+		if(bomb.GetSerialNumberNumbers().Count() == 4)
+		{
+			indicators = bomb.GetIndicators().Count() % 10;
+		}
+		else if(bomb.GetSerialNumberNumbers().Count() == 3)
+		{
+			indicators = (bomb.GetOnIndicators().Count() * 2) % 10;
+		}
+		else
+		{
+			indicators = (bomb.GetOffIndicators().Count() * 2) % 10;
+		}
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of indicators is {1}.", moduleId, indicators);
+	}
+
+	void CalcPorts()
+	{
+		ports = new String[] {"PS2", "Serial", "Parallel", "AC Power", "HDMI", "VGA", "USB", "RJ-45", "DVI-D", "Stereo RCA", "Component Video", "Composite Video", "PCMCIA"}.OrderBy(x => rnd.Next()).ToArray();
+		
+		port = ports.ToList().IndexOf(GetPortName(port1)) - port2;
+		while(port < 0) port += ports.Count();
+
+        Debug.LogFormat("[Bomb Diffusal #{0}] Port menu order is [ {1}].", moduleId, GetValues(ports));
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required port type is {1}.", moduleId, ports[port]);
+	}
+
+	void CalcManuals()
+	{
+		manuals = 1;
+
+		if((destination / 100) <= 2 || (destination / 100) == 4)
+			manuals += 2 * bomb.GetPortPlateCount();
+		else if ((destination / 100) == 3 || (destination / 100) == 5)
+			manuals += bomb.GetBatteryHolderCount();
+		else if (destination == 600 || destination == 601 || destination == 633)
+			manuals = 9; 
+
+		if(bomb.GetSerialNumberNumbers().ElementAt(bomb.GetSerialNumberNumbers().Count() - 1) % 2 == 0)
+			manuals += 1;
+
+		if(manuals >= 9)
+			manuals = 9;
+
+		Debug.LogFormat("[Bomb Diffusal #{0}] Required number of manuals is {1}.", moduleId, manuals);
 	}
 
 	void GenerateLicenseNo()
@@ -219,6 +287,14 @@ public class bombDiffusalScript : MonoBehaviour
 		string ret = "";
 		foreach(char val in array)
 			ret += val;
+		return ret;
+	}
+
+	String GetValues(String[] array)
+	{
+		string ret = "";
+		foreach(String val in array)
+			ret += val + ", ";
 		return ret;
 	}
 

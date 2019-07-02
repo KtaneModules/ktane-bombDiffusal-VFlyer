@@ -2120,9 +2120,9 @@ TextMesh:
 
     Area: ???
 
-    B.: ?   I.: ?   M.: ?
+    Components: ?;?;?
 
-    Ports.: ?'
+    Port: ?'
   m_OffsetZ: 0
   m_CharacterSize: 0.05
   m_LineSpacing: 1
