@@ -748,6 +748,7 @@ public class bombDiffusalScript : MonoBehaviour
 
 	IEnumerator PrintManifest()
 	{
+		var watch = System.Diagnostics.Stopwatch.StartNew();
 		String[] message = new String[] { "--== Shipping Manifest==--\n", 
 		                                  "\n",
 										  "Delivery Nº: " + GetValues(deliveryNo.ToArray()) + "\n",
@@ -767,12 +768,15 @@ public class bombDiffusalScript : MonoBehaviour
 										  "                         |                     |\n",
 										  "                         '- - - - - - - -'"
 										};
+
+        Audio.PlaySoundAtTransform("print", transform);
+		
 		for(int i = 0; i < 20; i++)
 		{
 			manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
 			manifest.gameObject.transform.localPosition += new Vector3(0, 0, 0.005f);
 			manifest.gameObject.transform.localScale += new Vector3(0, 0, 0.01f);
-            yield return new WaitForSeconds(0.001f);
+            yield return new WaitForSeconds(0.01f);
 		}
 
 		for(int i = 0; i < message.Length; i++)
@@ -783,10 +787,12 @@ public class bombDiffusalScript : MonoBehaviour
 				manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
 				manifest.gameObject.transform.localPosition += new Vector3(0, 0, 0.005f);
 				manifest.gameObject.transform.localScale += new Vector3(0, 0, 0.01f);
-				yield return new WaitForSeconds(0.001f);
+				yield return new WaitForSeconds(0.01f);
 			}
 		}
 
+		watch.Stop();
+		Debug.Log(watch.ElapsedMilliseconds);
 		GetComponent<KMBombModule>().HandlePass();
 	}
 }
