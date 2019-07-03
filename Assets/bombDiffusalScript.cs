@@ -770,6 +770,8 @@ public class bombDiffusalScript : MonoBehaviour
 		for(int i = 0; i < 20; i++)
 		{
 			manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
+			manifest.gameObject.transform.localPosition += new Vector3(0, 0, 0.005f);
+			manifest.gameObject.transform.localScale += new Vector3(0, 0, 0.01f);
             yield return new WaitForSeconds(0.001f);
 		}
 
@@ -779,6 +781,8 @@ public class bombDiffusalScript : MonoBehaviour
 			for(int j = 0; j < 22; j++)
 			{
 				manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
+				manifest.gameObject.transform.localPosition += new Vector3(0, 0, 0.005f);
+				manifest.gameObject.transform.localScale += new Vector3(0, 0, 0.01f);
 				yield return new WaitForSeconds(0.001f);
 			}
 		}
