@@ -17,6 +17,9 @@ public class bombDiffusalScript : MonoBehaviour
 
 	public GameObject[] menus; 
 
+	public GameObject manifest;
+	public TextMesh manifestText;
+
 	public Material[] usa1;
 	public Material[] usa2;
 	public Material[] america;
@@ -88,6 +91,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void OpenDestinationMenu()
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		if(selectedDestination == -1)
 			selectedDestination = 100;
 
@@ -101,6 +106,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void OpenComponentMenu()
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		if(selectedBatteries == -1)
 		{
 			selectedBatteries = 0;
@@ -123,6 +130,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void OpenMainMenu()
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		menus[0].transform.Find("destination").gameObject.GetComponentInChildren<TextMesh>().text = "Sector: " + GetSectorName(selectedDestination / 100) + "\nArea: " + GetAreaName(selectedDestination);
 		menus[0].transform.Find("specs").gameObject.GetComponentInChildren<TextMesh>().text = "\nComponents: " + (selectedBatteries != -1 ? selectedBatteries + "" : "?") + "/" + (selectedIndicators != -1 ? selectedIndicators + "" : "?") + "/" + (selectedManuals != -1 ? selectedManuals + "" : "?") +
 																							  "\nPort: " + (selectedPort != -1 ? ports[selectedPort] : "???");
@@ -134,6 +143,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangeSector(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedDestination += i * 100;
 
 		if(selectedDestination >= 700)
@@ -148,6 +159,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangeArea(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedDestination += i;
 
 		if(selectedDestination % 10 == 5)
@@ -166,6 +179,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangeBatteries(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedBatteries += i;
 
 		if(selectedBatteries == -1)
@@ -178,6 +193,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangeIndicators(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedIndicators += i;
 
 		if(selectedIndicators == -1)
@@ -190,6 +207,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangePorts(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedPort += i;
 
 		if(selectedPort == -1)
@@ -205,6 +224,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void ChangeManuals(int i)
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		selectedManuals += i;
 
 		if(selectedManuals == -1)
@@ -217,6 +238,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void CheckSolution()
 	{
+        Audio.PlaySoundAtTransform("button", transform);
+
 		if(destination != selectedDestination)
 		{
         	Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected destination was {1}. Expected {2}.", moduleId, GetAreaName(selectedDestination), GetAreaName(destination));
@@ -249,11 +272,11 @@ public class bombDiffusalScript : MonoBehaviour
 		}
 
 		Debug.LogFormat("[Bomb Diffusal #{0}] Input is correct. Module solved.", moduleId, selectedManuals, manuals);
-		GetComponent<KMBombModule>().HandlePass();
 
-		goButton.gameObject.SetActive(false);
-		destinationButton.gameObject.SetActive(false);
-		componentButton.gameObject.SetActive(false);
+		menus[0].SetActive(false);
+		menus[3].SetActive(true);
+
+		StartCoroutine("PrintManifest");
 	}
 
 	void Start () 
@@ -721,5 +744,45 @@ public class bombDiffusalScript : MonoBehaviour
 		}
 
 		return null;
+	}
+
+	IEnumerator PrintManifest()
+	{
+		String[] message = new String[] { "--== Shipping Manifest==--\n", 
+		                                  "\n",
+										  "Delivery Nº: " + GetValues(deliveryNo.ToArray()) + "\n",
+										  "\n",
+										  "From: Steel Crate Games,\n",
+										  "Ottawa, Ontario, Canada\n",
+										  "\n",
+										  "To: " + GetAreaName(destination) + ",\n",
+										  GetSectorName(destination / 100) + "\n",
+										  "Area Code: " + destination + "\n",
+										  "\n",
+										  "Content Details: \n",
+										  "   - Bomb;\n",
+										  "                         ,- - - - - - - -,\n",
+										  "                         |                     |\n",
+										  "                         |                     |\n",
+										  "                         |                     |\n",
+										  "                         '- - - - - - - -'"
+										};
+		for(int i = 0; i < 20; i++)
+		{
+			manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
+            yield return new WaitForSeconds(0.001f);
+		}
+
+		for(int i = 0; i < message.Length; i++)
+		{
+			manifestText.text = message[message.Length - 1 - i] + manifestText.text;
+			for(int j = 0; j < 22; j++)
+			{
+				manifestText.gameObject.transform.localPosition += new Vector3(0, 0, 0.01f);
+				yield return new WaitForSeconds(0.001f);
+			}
+		}
+
+		GetComponent<KMBombModule>().HandlePass();
 	}
 }
