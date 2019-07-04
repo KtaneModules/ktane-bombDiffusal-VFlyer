@@ -19,6 +19,15 @@ public class bombDiffusalScript : MonoBehaviour
 
 	public GameObject manifest;
 	public TextMesh manifestText;
+	public GameObject postStamp;
+	public GameObject stamp;
+
+	public Material[] usa1Stamp;
+	public Material[] usa2Stamp;
+	public Material[] americaStamp;
+	public Material[] eurasiaStamp;
+	public Material[] africaStamp;
+	public Material[] spaceStamp;
 
 	public Material[] usa1;
 	public Material[] usa2;
@@ -746,10 +755,24 @@ public class bombDiffusalScript : MonoBehaviour
 		return null;
 	}
 
+	Material GetStamp(int dest)
+	{
+		switch(dest / 100)
+		{
+			case 1: return usa1Stamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 2: return usa2Stamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 3: return americaStamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 4: return eurasiaStamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 5: return africaStamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+			case 6: return spaceStamp[ (((selectedDestination % 100) / 10) * 5) + selectedDestination % 10 ];
+		}
+
+		return null;
+	}
+
 	IEnumerator PrintManifest()
 	{
-		var watch = System.Diagnostics.Stopwatch.StartNew();
-		String[] message = new String[] { "--== Shipping Manifest==--\n", 
+		String[] message = new String[] { "--==Shipping Manifest==--\n", 
 		                                  "\n",
 										  "Delivery Nº: " + GetValues(deliveryNo.ToArray()) + "\n",
 										  "\n",
@@ -762,11 +785,11 @@ public class bombDiffusalScript : MonoBehaviour
 										  "\n",
 										  "Content Details: \n",
 										  "   - Bomb;\n",
-										  "                         ,- - - - - - - -,\n",
-										  "                         |                     |\n",
-										  "                         |                     |\n",
-										  "                         |                     |\n",
-										  "                         '- - - - - - - -'"
+										  "\n",
+										  "\n",
+										  "\n",
+										  "\n",
+										  ""
 										};
 
         Audio.PlaySoundAtTransform("print", transform);
@@ -791,8 +814,19 @@ public class bombDiffusalScript : MonoBehaviour
 			}
 		}
 
-		watch.Stop();
-		Debug.Log(watch.ElapsedMilliseconds);
+		yield return new WaitForSeconds(0.3f);
+
+		int[] vertical = new int[] {110, 122, 124, 134, 141, 142, 144, 203, 223, 224, 230, 231, 233, 240, 241, 311, 312, 313, 321, 330, 332, 333, 342, 400, 432, 434, 441, 444, 511, 520, 523, 540, 541};
+
+        Audio.PlaySoundAtTransform("paper", transform);
+		postStamp.GetComponentInChildren<Renderer>().material = GetStamp(destination);
+		if(vertical.ToList().Contains(destination)) postStamp.transform.Rotate(0, 90f, 0);
+		postStamp.SetActive(true);
+
+		yield return new WaitForSeconds(0.3f);
+
+		stamp.SetActive(true);
+        Audio.PlaySoundAtTransform("stamp", transform);
 		GetComponent<KMBombModule>().HandlePass();
 	}
 }
