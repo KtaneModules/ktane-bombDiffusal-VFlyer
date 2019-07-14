@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using KModkit;
+using rnd = UnityEngine.Random;
 
 public class bombDiffusalScript : MonoBehaviour 
 {
 	public KMBombInfo bomb;
 	public KMAudio Audio;
-
-    static System.Random rnd = new System.Random();
 
 	public TextMesh licenseNoText;
 	public GameObject[] plates;
@@ -301,8 +300,8 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void SetUpPorts()
 	{
-		port1 = rnd.Next() % 13;
-		port2 = rnd.Next() % 13;
+		port1 = rnd.Range(0, 13);
+		port2 = rnd.Range(0, 13);
 
         Debug.LogFormat("[Bomb Diffusal #{0}] Port 1 is {1}. Port 2 is {2}.", moduleId, GetPortName(port1), GetPortName(port2));
 		
@@ -383,7 +382,7 @@ public class bombDiffusalScript : MonoBehaviour
 
 	void CalcPorts()
 	{
-		ports = new String[] {"PS2", "Serial", "Parallel", "AC Power", "HDMI", "VGA", "USB", "RJ-45", "DVI-D", "Stereo RCA", "Component Video", "Composite Video", "PCMCIA"}.OrderBy(x => rnd.Next()).ToArray();
+		ports = new String[] {"PS2", "Serial", "Parallel", "AC Power", "HDMI", "VGA", "USB", "RJ-45", "DVI-D", "Stereo RCA", "Component Video", "Composite Video", "PCMCIA"}.OrderBy(x => rnd.Range(0, 1000)).ToArray();
 		
 		port = ports.ToList().IndexOf(GetPortName(port1)) - port2;
 		while(port < 0) port += ports.Count();
@@ -416,15 +415,15 @@ public class bombDiffusalScript : MonoBehaviour
 	{
 		licenseNo = "";
 
-		int nLetters = rnd.Next() % 3 + 2;
+		int nLetters = rnd.Range(0, 3) + 2;
 		int nNumbers = 6 - nLetters;
 
 		for(int i = 0; i < nLetters; i++)
-			licenseNo += (char) (rnd.Next() % 26 + 65);
+			licenseNo += (char) (rnd.Range(0, 26) + 65);
 		for(int i = 0; i < nNumbers; i++)
-			licenseNo += (char) (rnd.Next() % 10 + 48);
+			licenseNo += (char) (rnd.Range(0, 10) + 48);
 
-		licenseNo = GetValues(licenseNo.ToArray().OrderBy(x => rnd.Next()).ToArray());
+		licenseNo = GetValues(licenseNo.ToArray().OrderBy(x => rnd.Range(0, 1000)).ToArray());
 	}
 
 	void GenerateDeliveryNo()
