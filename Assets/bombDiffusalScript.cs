@@ -864,7 +864,7 @@ public class bombDiffusalScript : MonoBehaviour
     }
 
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} open <menu> [Opens the specified menu, the three valid menus are 'Main', 'Destination', and 'Components'] | !{0} back [Heads back to the main menu] | !{0} destination USA #1;Delaware [Sets the destination's sector and area] | !{0} component batteries 2 [Sets the specified component of batteries, indicators, port, or manuals] | !{0} tilt r [Use to see ports on the right side of the B.D.S., this command is a general TP command] | !{0} go [Submits the current configuration]";
+    private readonly string TwitchHelpMessage = @"!{0} open <menu> [Opens the specified menu, the three valid menus are 'Main', 'Destination', and 'Components'] | !{0} back [Heads back to the main menu] | !{0} destination USA #1;Delaware [Sets the destination's sector and area] | !{0} component batteries 2 [Sets the specified component of batteries, indicators, port (NO SPACES IN PORT NAMES), or manuals] | !{0} component cycleportsleft [Cycles through all ports in the 'Components' menu to the left] | !{0} tilt r [Use to see ports on the right side of the B.D.S., this command is a general TP command] | !{0} go [Submits the current configuration]";
     #pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
     {
@@ -1070,6 +1070,30 @@ public class bombDiffusalScript : MonoBehaviour
                             {
                                 parameters[2] = "PS/2";
                             }
+                            else if (parameters[2].EqualsIgnoreCase("RCA"))
+                            {
+                                parameters[2] = "Stereo RCA";
+                            }
+                            else if (parameters[2].EqualsIgnoreCase("StereoRCA"))
+                            {
+                                parameters[2] = "Stereo RCA";
+                            }
+                            else if (parameters[2].EqualsIgnoreCase("ComponentVideo"))
+                            {
+                                parameters[2] = "Component Video";
+                            }
+                            else if (parameters[2].EqualsIgnoreCase("AC"))
+                            {
+                                parameters[2] = "AC Power";
+                            }
+                            else if (parameters[2].EqualsIgnoreCase("ACPower"))
+                            {
+                                parameters[2] = "AC Power";
+                            }
+                            else if (parameters[2].EqualsIgnoreCase("CompositeVideo"))
+                            {
+                                parameters[2] = "Composite Video";
+                            }
                             while (!menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text.EqualsIgnoreCase(parameters[2]))
                             {
                                 if (counter == 13)
@@ -1089,20 +1113,21 @@ public class bombDiffusalScript : MonoBehaviour
                                 yield return new WaitForSeconds(0.1f);
                             }
                         }
-                        else if(isNumValid(parameters[2]))
+                        else if (isNumValid(parameters[2]))
                         {
                             int temp = 0;
                             int.TryParse(parameters[2], out temp);
                             if (parameters[1].EqualsIgnoreCase("batteries"))
                             {
-                                if(temp < selectedBatteries)
+                                if (temp < selectedBatteries)
                                 {
-                                    for(int i = selectedBatteries; i > temp; i--)
+                                    for (int i = selectedBatteries; i > temp; i--)
                                     {
                                         subBattery.OnInteract();
                                         yield return new WaitForSeconds(0.2f);
                                     }
-                                }else if (temp > selectedBatteries)
+                                }
+                                else if (temp > selectedBatteries)
                                 {
                                     for (int i = selectedBatteries; i < temp; i++)
                                     {
@@ -1110,7 +1135,8 @@ public class bombDiffusalScript : MonoBehaviour
                                         yield return new WaitForSeconds(0.2f);
                                     }
                                 }
-                            }else if (parameters[1].EqualsIgnoreCase("indicators"))
+                            }
+                            else if (parameters[1].EqualsIgnoreCase("indicators"))
                             {
                                 if (temp < selectedIndicators)
                                 {
@@ -1158,6 +1184,26 @@ public class bombDiffusalScript : MonoBehaviour
                     {
                         yield return "sendtochat Bomb Diffusal: I need to be on the Components Menu to set components.";
                     }
+                }
+            }else if(parameters.Length == 2)
+            {
+                if(menus[2].active == true)
+                {
+                    if (parameters[1].EqualsIgnoreCase("cycleportsleft"))
+                    {
+                        int counter = 0;
+                        while (counter < 13)
+                        {
+                            counter++;
+                            yield return "trycancel The port cycling has been cancelled due to a cancel request";
+                            prevPort.OnInteract();
+                            yield return new WaitForSeconds(0.9f);
+                        }
+                    }
+                }
+                else
+                {
+                    yield return "sendtochat Bomb Diffusal: I need to be on the Components Menu to set components.";
                 }
             }
         }
