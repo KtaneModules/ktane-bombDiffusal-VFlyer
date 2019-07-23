@@ -916,6 +916,7 @@ public class bombDiffusalScript : MonoBehaviour
         {
             if (parameters.Length >= 2 && command.Contains(";"))
             {
+                yield return null;
                 if (menus[1].active == true)
                 {
                     int counter = 0;
@@ -959,7 +960,6 @@ public class bombDiffusalScript : MonoBehaviour
                         }
                         yield return new WaitForSeconds(0.1f);
                     }
-                    yield return null;
                 }
                 else
                 {
@@ -1101,6 +1101,7 @@ public class bombDiffusalScript : MonoBehaviour
                                     yield return "sendtochaterror Bomb Diffusal: I could not find the port '" + parameters[2] + "' in my directory!";
                                     yield break;
                                 }
+                                yield return null;
                                 counter++;
                                 if (rand == 0)
                                 {
@@ -1117,6 +1118,7 @@ public class bombDiffusalScript : MonoBehaviour
                         {
                             int temp = 0;
                             int.TryParse(parameters[2], out temp);
+                            yield return null;
                             if (parameters[1].EqualsIgnoreCase("batteries"))
                             {
                                 if (temp < selectedBatteries)
