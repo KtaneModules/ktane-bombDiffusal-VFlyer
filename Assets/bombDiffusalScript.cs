@@ -11,9 +11,11 @@ public class bombDiffusalScript : MonoBehaviour
 {
     public KMBombInfo bomb;
     public KMAudio Audio;
+    public KMBombModule modSelf;
+    public KMSelectable selectableSelf;
 
     public TextMesh licenseNoText;
-    public GameObject[] plates;
+    public RenderPlate[] plates;
 
     public GameObject[] menus;
 
@@ -39,12 +41,17 @@ public class bombDiffusalScript : MonoBehaviour
     public KMSelectable destinationButton;
     public KMSelectable componentButton;
     public KMSelectable goButton;
+    public TextMesh destinationScn;
+    public TextMesh specsScn;
 
     public KMSelectable nextSector;
     public KMSelectable prevSector;
     public KMSelectable nextArea;
     public KMSelectable prevArea;
     public KMSelectable destinationBack;
+    public TextMesh sectorScn;
+    public TextMesh areaScn;
+    public Renderer flagScn;
 
     public KMSelectable addBattery;
     public KMSelectable subBattery;
@@ -55,25 +62,30 @@ public class bombDiffusalScript : MonoBehaviour
     public KMSelectable addManual;
     public KMSelectable subManual;
     public KMSelectable componentBack;
+    public TextMesh batteryScn;
+    public TextMesh indicatorsScn;
+    public TextMesh portsScn;
+    public TextMesh manualScn;
 
     //Logging
     static int moduleIdCounter = 1;
     int moduleId;
 
     int port1, port2;
-    String[] ports;
-    String licenseNo;
+    string[] ports;
+    string licenseNo;
     List<int> deliveryNo;
-    int destination;
-    int batteries;
-    int indicators;
-    int port;
-    int manuals;
+    int[] goalDelivery;
+    int goalDestination;
+    int goalBatteries;
+    int goalIndicators;
+    int goalPortIdx;
+    int goalManuals;
 
     int selectedDestination = -1;
     int selectedBatteries = -1;
     int selectedIndicators = -1;
-    int selectedPort = -1;
+    int selectedPortIdx = -1;
     int selectedManuals = -1;
 
     void Awake()
@@ -98,6 +110,54 @@ public class bombDiffusalScript : MonoBehaviour
         goButton.OnInteract += delegate () { CheckSolution(); return false; };
     }
 
+    void UpdateSelectables(int idxNum)
+    {
+        switch (idxNum)
+        {
+            case 0:
+                selectableSelf.Children = new KMSelectable[] { destinationButton, null, componentButton, null, goButton, null, };
+                selectableSelf.ChildRowLength = 2;
+                break;
+            case 1:
+                selectableSelf.Children = new KMSelectable[] { prevSector, nextSector, prevArea, nextArea, destinationBack, null };
+                selectableSelf.ChildRowLength = 2;
+                break;
+            case 2:
+                selectableSelf.Children = new KMSelectable[] { subBattery, addBattery, subIndicator, addIndicator, prevPort, nextPort, subManual, addManual, componentBack, null };
+                selectableSelf.ChildRowLength = 2;
+                break;
+            default:
+                selectableSelf.Children = new KMSelectable[0];
+                selectableSelf.ChildRowLength = 1;
+                break;
+        }
+        selectableSelf.UpdateChildren();
+        //selectableSelf.UpdateChildren(selectableSelf.Children.FirstOrDefault());
+    }
+
+    void UpdateDestinationMenu() // Update the Destination Screen on the module
+    {
+        sectorScn.text = GetSectorName(selectedDestination / 100);
+        areaScn.text = GetAreaName(selectedDestination);
+        flagScn.material = GetFlag(selectedDestination);
+    }
+    void UpdateComponentMenu() // Update the Component Screen on the module
+    {
+        batteryScn.text = string.Format("Batteries: {0}", selectedBatteries);
+        indicatorsScn.text = string.Format("Indicators: {0}", selectedIndicators);
+        portsScn.text = ports[selectedPortIdx] == "PS2" ? "PS/2" : ports[selectedPortIdx];
+        manualScn.text = string.Format("Manuals: {0}", selectedManuals);
+    }
+    void UpdateMainMenu()
+    {
+        destinationScn.text = string.Format("Sector: {0}\nArea: {1}", GetSectorName(selectedDestination / 100), GetAreaName(selectedDestination));
+        specsScn.text = string.Format("\nComponents: {0}/{1}/{2}\nPort: {3}",
+            selectedBatteries != -1 ? selectedBatteries.ToString() : "?",
+            selectedIndicators != -1 ? selectedIndicators.ToString() : "?",
+            selectedManuals != -1 ? selectedManuals.ToString() : "?",
+            selectedPortIdx != -1 ? ports[selectedPortIdx] : "???");
+    }
+
     void OpenDestinationMenu()
     {
         Audio.PlaySoundAtTransform("button", transform);
@@ -105,12 +165,11 @@ public class bombDiffusalScript : MonoBehaviour
         if (selectedDestination == -1)
             selectedDestination = 100;
 
-        menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
-        menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
-        menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+        UpdateDestinationMenu();
 
         menus[0].SetActive(false);
         menus[1].SetActive(true);
+        UpdateSelectables(1);
     }
 
     void OpenComponentMenu()
@@ -121,33 +180,27 @@ public class bombDiffusalScript : MonoBehaviour
         {
             selectedBatteries = 0;
             selectedIndicators = 0;
-            selectedPort = 0;
+            selectedPortIdx = 0;
             selectedManuals = 0;
         }
 
-        menus[2].transform.Find("batteries").gameObject.GetComponentInChildren<TextMesh>().text = "Batteries: " + selectedBatteries;
-        menus[2].transform.Find("indicators").gameObject.GetComponentInChildren<TextMesh>().text = "Indicators: " + selectedIndicators;
-        menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
-        menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
-
-        if (menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text == "PS2")
-            menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = "PS/2";
+        UpdateComponentMenu();
 
         menus[0].SetActive(false);
         menus[2].SetActive(true);
+        UpdateSelectables(2);
     }
 
     void OpenMainMenu()
     {
         Audio.PlaySoundAtTransform("button", transform);
 
-        menus[0].transform.Find("destination").gameObject.GetComponentInChildren<TextMesh>().text = "Sector: " + GetSectorName(selectedDestination / 100) + "\nArea: " + GetAreaName(selectedDestination);
-        menus[0].transform.Find("specs").gameObject.GetComponentInChildren<TextMesh>().text = "\nComponents: " + (selectedBatteries != -1 ? selectedBatteries + "" : "?") + "/" + (selectedIndicators != -1 ? selectedIndicators + "" : "?") + "/" + (selectedManuals != -1 ? selectedManuals + "" : "?") +
-                                                                                              "\nPort: " + (selectedPort != -1 ? ports[selectedPort] : "???");
+        UpdateMainMenu();
 
         menus[1].SetActive(false);
         menus[2].SetActive(false);
         menus[0].SetActive(true);
+        UpdateSelectables(0);
     }
 
     void ChangeSector(int i)
@@ -161,9 +214,7 @@ public class bombDiffusalScript : MonoBehaviour
         if (selectedDestination < 100)
             selectedDestination += 600;
 
-        menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
-        menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
-        menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+        UpdateDestinationMenu();
     }
 
     void ChangeArea(int i)
@@ -176,14 +227,12 @@ public class bombDiffusalScript : MonoBehaviour
             selectedDestination += 5;
         if (selectedDestination % 10 == 9)
             selectedDestination -= 5;
-        if ((selectedDestination % 100) / 10 == 5)
-            selectedDestination = (selectedDestination / 100) * 100;
-        if ((selectedDestination % 100) / 10 == 9)
+        if (selectedDestination % 100 / 10 == 5)
+            selectedDestination = selectedDestination / 100 * 100;
+        if (selectedDestination % 100 / 10 == 9)
             selectedDestination = (selectedDestination / 100) * 100 + 144;
 
-        menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text = GetSectorName(selectedDestination / 100);
-        menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text = GetAreaName(selectedDestination);
-        menus[1].transform.Find("flag").gameObject.GetComponentInChildren<Renderer>().material = GetFlag(selectedDestination);
+        UpdateDestinationMenu();
     }
 
     void ChangeBatteries(int i)
@@ -192,12 +241,12 @@ public class bombDiffusalScript : MonoBehaviour
 
         selectedBatteries += i;
 
-        if (selectedBatteries == -1)
+        if (selectedBatteries <= -1)
             selectedBatteries = 0;
-        if (selectedBatteries == 10)
+        if (selectedBatteries >= 10)
             selectedBatteries = 9;
 
-        menus[2].transform.Find("batteries").gameObject.GetComponentInChildren<TextMesh>().text = "Batteries: " + selectedBatteries;
+        UpdateComponentMenu();
     }
 
     void ChangeIndicators(int i)
@@ -206,29 +255,26 @@ public class bombDiffusalScript : MonoBehaviour
 
         selectedIndicators += i;
 
-        if (selectedIndicators == -1)
+        if (selectedIndicators <= -1)
             selectedIndicators = 0;
-        if (selectedIndicators == 10)
+        if (selectedIndicators >= 10)
             selectedIndicators = 9;
 
-        menus[2].transform.Find("indicators").gameObject.GetComponentInChildren<TextMesh>().text = "Indicators: " + selectedIndicators;
+        UpdateComponentMenu();
     }
 
     void ChangePorts(int i)
     {
         Audio.PlaySoundAtTransform("button", transform);
 
-        selectedPort += i;
+        selectedPortIdx += i;
 
-        if (selectedPort == -1)
-            selectedPort = ports.Length - 1;
-        if (selectedPort == ports.Length)
-            selectedPort = 0;
+        if (selectedPortIdx <= -1)
+            selectedPortIdx = ports.Length - 1;
+        if (selectedPortIdx >= ports.Length)
+            selectedPortIdx = 0;
 
-        menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = ports[selectedPort];
-
-        if (menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text == "PS2")
-            menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text = "PS/2";
+        UpdateComponentMenu();
     }
 
     void ChangeManuals(int i)
@@ -242,50 +288,54 @@ public class bombDiffusalScript : MonoBehaviour
         if (selectedManuals == 10)
             selectedManuals = 9;
 
-        menus[2].transform.Find("manuals").gameObject.GetComponentInChildren<TextMesh>().text = "Manuals: " + selectedManuals;
+        UpdateComponentMenu();
     }
 
     void CheckSolution()
     {
         Audio.PlaySoundAtTransform("button", transform);
 
-        if (destination != selectedDestination)
+        bool isAllCorrect = true;
+
+        if (goalDestination != selectedDestination)
         {
-            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected destination was {1}. Expected {2}.", moduleId, GetAreaName(selectedDestination), GetAreaName(destination));
-            GetComponent<KMBombModule>().HandleStrike();
-            return;
+            Debug.LogFormat("[Bomb Diffusal #{0}] Incorrectly selected destination was {1}. Expected {2}.", moduleId, GetAreaName(selectedDestination), GetAreaName(goalDestination));
+            isAllCorrect = false;
         }
-        if (batteries != selectedBatteries)
+        if (goalBatteries != selectedBatteries)
         {
-            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} batteries. Expected {2}.", moduleId, selectedBatteries, batteries);
-            GetComponent<KMBombModule>().HandleStrike();
-            return;
+            Debug.LogFormat("[Bomb Diffusal #{0}] Incorrectly selected {1} batter{3}. Expected {2}.", moduleId, selectedBatteries, goalBatteries, goalBatteries == 1 ? "y" : "ies");
+            isAllCorrect = false;
         }
-        if (indicators != selectedIndicators)
+        if (goalIndicators != selectedIndicators)
         {
-            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} indicators. Expected {2}.", moduleId, selectedIndicators, indicators);
-            GetComponent<KMBombModule>().HandleStrike();
-            return;
+            Debug.LogFormat("[Bomb Diffusal #{0}] Incorrectly selected {1} indicator(s). Expected {2}.", moduleId, selectedIndicators, goalIndicators);
+            isAllCorrect = false;
         }
-        if (port != selectedPort)
+        if (goalPortIdx != selectedPortIdx)
         {
-            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} port. Expected {2} port.", moduleId, ports[selectedPort], ports[port]);
-            GetComponent<KMBombModule>().HandleStrike();
-            return;
+            Debug.LogFormat("[Bomb Diffusal #{0}] Incorrectly selected {1} port. Expected {2} port.", moduleId, ports[selectedPortIdx], ports[goalPortIdx]);
+            isAllCorrect = false;
         }
-        if (manuals != selectedManuals)
+        if (goalManuals != selectedManuals)
         {
-            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Selected {1} manuals. Expected {2}.", moduleId, selectedManuals, manuals);
-            GetComponent<KMBombModule>().HandleStrike();
+            Debug.LogFormat("[Bomb Diffusal #{0}] Incorrectly selected {1} manual(s). Expected {2}.", moduleId, selectedManuals, goalManuals);
+            isAllCorrect = false;
+        }
+
+        if (!isAllCorrect)
+        {
+            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Not all conditions are correctly selected!", moduleId);
+            modSelf.HandleStrike();
             return;
         }
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Input is correct. Module solved.", moduleId, selectedManuals, manuals);
+        Debug.LogFormat("[Bomb Diffusal #{0}] Input is correct. Module solved.", moduleId);
 
         menus[0].SetActive(false);
         menus[3].SetActive(true);
 
-        StartCoroutine("PrintManifest");
+        StartCoroutine(PrintManifest());
     }
 
     void Start()
@@ -297,6 +347,7 @@ public class bombDiffusalScript : MonoBehaviour
 
         menus[1].SetActive(false);
         menus[2].SetActive(false);
+        UpdateSelectables(0);
     }
 
     void SetUpPorts()
@@ -304,10 +355,10 @@ public class bombDiffusalScript : MonoBehaviour
         port1 = rnd.Range(0, 13);
         port2 = rnd.Range(0, 13);
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Port 1 is {1}. Port 2 is {2}.", moduleId, GetPortName(port1), GetPortName(port2));
+        Debug.LogFormat("[Bomb Diffusal #{0}] Port 1: {1}. Port 2: {2}.", moduleId, GetPortName(port1), GetPortName(port2));
 
-        plates[0].transform.Find(GetPortName(port1)).gameObject.SetActive(true);
-        plates[1].transform.Find(GetPortName(port2)).gameObject.SetActive(true);
+        plates[0].RenderPort(port1);
+        plates[1].RenderPort(port2);
     }
 
     void GenerateNumbers()
@@ -320,8 +371,8 @@ public class bombDiffusalScript : MonoBehaviour
 
         licenseNoText.text = "Software License No.:\n" + licenseNo;
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Software licesnse number is {1}.", moduleId, licenseNo);
-        Debug.LogFormat("[Bomb Diffusal #{0}] Delivery number is {1}.", moduleId, GetValues(deliveryNo.ToArray()));
+        Debug.LogFormat("[Bomb Diffusal #{0}] Software license number: {1}.", moduleId, licenseNo);
+        Debug.LogFormat("[Bomb Diffusal #{0}] Delivery number: {1}.", moduleId, deliveryNo.Join(""));
     }
 
     void CalcDestination()
@@ -330,25 +381,25 @@ public class bombDiffusalScript : MonoBehaviour
         {
             if (deliveryNo.FindAll(x => x == i).Count() == 1)
             {
-                destination = (deliveryNo.IndexOf(i) + 1) * 100;
-                Debug.LogFormat("[Bomb Diffusal #{0}] Delivery sector is {1}.", moduleId, GetSectorName(deliveryNo.IndexOf(i) + 1));
+                goalDestination = (deliveryNo.IndexOf(i) + 1) * 100;
+                Debug.LogFormat("[Bomb Diffusal #{0}] Delivery sector: {1}.", moduleId, GetSectorName(deliveryNo.IndexOf(i) + 1));
                 break;
             }
         }
 
-        if (destination == 600)
+        if (goalDestination == 600)
         {
-            destination += (deliveryNo.ElementAt(5) % 5) * 10;
-            destination += deliveryNo.ElementAt(4) % 5;
-            Debug.LogFormat("[Bomb Diffusal #{0}] (Delivery is in space. Reversing number for next step.)", moduleId, GetValues(deliveryNo.ToArray()));
+            goalDestination += deliveryNo.ElementAt(5) % 5 * 10
+                + deliveryNo.ElementAt(4) % 5;
+            Debug.LogFormat("[Bomb Diffusal #{0}] (Delivery is in space. Reversing number for next step.)", moduleId);
         }
         else
         {
-            destination += (deliveryNo.ElementAt(0) % 5) * 10;
-            destination += deliveryNo.ElementAt(1) % 5;
+            goalDestination += deliveryNo.ElementAt(0) % 5 * 10
+                + deliveryNo.ElementAt(1) % 5;
         }
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Delivery area is {1}.", moduleId, GetAreaName(destination));
+        Debug.LogFormat("[Bomb Diffusal #{0}] Delivery area: {1}.", moduleId, GetAreaName(goalDestination));
     }
 
     void CalcComponents()
@@ -361,56 +412,55 @@ public class bombDiffusalScript : MonoBehaviour
 
     void CalcBatteries()
     {
-        batteries = (bomb.GetBatteryCount() + bomb.GetBatteryHolderCount() + 1) % 10;
-        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of batteries is {1}.", moduleId, batteries);
+        goalBatteries = (bomb.GetBatteryCount() + bomb.GetBatteryHolderCount() + 1) % 10;
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of batteries: {1}.", moduleId, goalBatteries);
     }
 
     void CalcIndicators()
     {
         if (bomb.GetSerialNumberNumbers().Count() == 4)
         {
-            indicators = bomb.GetIndicators().Count() % 10;
+            goalIndicators = bomb.GetIndicators().Count() % 10;
         }
         else if (bomb.GetSerialNumberNumbers().Count() == 3)
         {
-            indicators = (bomb.GetOnIndicators().Count() * 2) % 10;
+            goalIndicators = (bomb.GetOnIndicators().Count() * 2) % 10;
         }
         else
         {
-            indicators = (bomb.GetOffIndicators().Count() * 2) % 10;
+            goalIndicators = (bomb.GetOffIndicators().Count() * 2) % 10;
         }
-        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of indicators is {1}.", moduleId, indicators);
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of indicators: {1}.", moduleId, goalIndicators);
     }
 
     void CalcPorts()
     {
-        ports = new String[] { "PS2", "Serial", "Parallel", "AC Power", "HDMI", "VGA", "USB", "RJ-45", "DVI-D", "Stereo RCA", "Component Video", "Composite Video", "PCMCIA" }.OrderBy(x => rnd.Range(0, 1000)).ToArray();
+        ports = new string[] { "PS2", "Serial", "Parallel", "AC Power", "HDMI", "VGA", "USB", "RJ-45", "DVI-D", "Stereo RCA", "Component Video", "Composite Video", "PCMCIA" }.Shuffle();
 
-        port = ports.ToList().IndexOf(GetPortName(port1)) - port2;
-        while (port < 0) port += ports.Count();
+        goalPortIdx = ports.ToList().IndexOf(GetPortName(port1)) - port2;
+        while (goalPortIdx < 0) goalPortIdx += ports.Count();
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Port menu order is [ {1}].", moduleId, GetValues(ports));
-        Debug.LogFormat("[Bomb Diffusal #{0}] Required port type is {1}.", moduleId, ports[port]);
+        Debug.LogFormat("[Bomb Diffusal #{0}] Port menu order: [ {1} ].", moduleId, ports.Join(", "));
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required port type: {1}.", moduleId, ports[goalPortIdx]);
     }
 
     void CalcManuals()
     {
-        manuals = 1;
+        goalManuals = 1;
 
-        if ((destination / 100) <= 2 || (destination / 100) == 4)
-            manuals += 2 * bomb.GetPortPlateCount();
-        else if ((destination / 100) == 3 || (destination / 100) == 5)
-            manuals += bomb.GetBatteryHolderCount();
-        else if (destination == 600 || destination == 601 || destination == 633)
-            manuals = 9;
+        if ((goalDestination / 100) <= 2 || (goalDestination / 100) == 4)
+            goalManuals += 2 * bomb.GetPortPlateCount();
+        else if ((goalDestination / 100) == 3 || (goalDestination / 100) == 5)
+            goalManuals += bomb.GetBatteryHolderCount();
+        else if (goalDestination == 600 || goalDestination == 601 || goalDestination == 633)
+            goalManuals = 9;
 
         if (bomb.GetSerialNumberNumbers().ElementAt(bomb.GetSerialNumberNumbers().Count() - 1) % 2 == 0)
-            manuals += 1;
+            goalManuals += 1;
 
-        if (manuals >= 9)
-            manuals = 9;
+        goalManuals = Math.Min(9, goalManuals);
 
-        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of manuals is {1}.", moduleId, manuals);
+        Debug.LogFormat("[Bomb Diffusal #{0}] Required number of manuals: {1}.", moduleId, goalManuals);
     }
 
     void GenerateLicenseNo()
@@ -421,90 +471,55 @@ public class bombDiffusalScript : MonoBehaviour
         int nNumbers = 6 - nLetters;
 
         for (int i = 0; i < nLetters; i++)
-            licenseNo += (char)(rnd.Range(0, 26) + 65);
+            licenseNo += (char)(rnd.Range(0, 26) + 'A');
         for (int i = 0; i < nNumbers; i++)
-            licenseNo += (char)(rnd.Range(0, 10) + 48);
+            licenseNo += (char)(rnd.Range(0, 10) + '0');
 
-        licenseNo = GetValues(licenseNo.ToArray().OrderBy(x => rnd.Range(0, 1000)).ToArray());
+        licenseNo = licenseNo.ToCharArray().Shuffle().Join("");
     }
 
     void GenerateDeliveryNo()
     {
         deliveryNo = new List<int>();
-        String sn = bomb.GetSerialNumber();
+        string sn = bomb.GetSerialNumber();
+
+        string[] rangesTables = { "ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXY", "Z01234", "56789" };
+
+        int[,] digitTable = {
+            { 3, 9, 6, 3, 3, 1, 4 },
+            { 5, 6, 8, 5, 9, 5, 0 },
+            { 6, 2, 7, 3, 8, 6, 7 },
+            { 1, 4, 6, 9, 8, 9, 1 },
+            { 2, 3, 9, 7, 2, 7, 2 },
+            { 5, 1, 8, 2, 8, 4, 4 },
+            { 0, 1, 0, 7, 5, 4, 0 },
+        };
+
 
         for (int i = 0; i < sn.Length; i++)
         {
-            if ((int)sn[i] >= 65 && (int)sn[i] <= 69)
+            int idxLis = -1;
+            for (int x = 0; x < rangesTables.Length; x++)
             {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(3);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(9);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(6);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(3);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(3);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(1);
-                else deliveryNo.Add(4);
+                if (rangesTables[x].Contains(licenseNo[i]))
+                {
+                    idxLis = x;
+                    break;
+                }
             }
-            else if ((int)sn[i] >= 70 && (int)sn[i] <= 74)
+            int idxSn = -1;
+            for (int x = 0; x < rangesTables.Length; x++)
             {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(5);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(6);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(8);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(5);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(9);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(5);
-                else deliveryNo.Add(0);
+                if (rangesTables[x].Contains(sn[i]))
+                {
+                    idxSn = x;
+                    break;
+                }
             }
-            else if ((int)sn[i] >= 75 && (int)sn[i] <= 79)
-            {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(6);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(2);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(7);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(3);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(8);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(6);
-                else deliveryNo.Add(7);
-            }
-            else if ((int)sn[i] >= 80 && (int)sn[i] <= 84)
-            {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(1);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(4);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(6);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(9);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(8);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(9);
-                else deliveryNo.Add(1);
-            }
-            else if ((int)sn[i] >= 85 && (int)sn[i] <= 89)
-            {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(2);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(3);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(9);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(7);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(2);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(7);
-                else deliveryNo.Add(2);
-            }
-            else if (((int)sn[i] >= 48 && (int)sn[i] <= 52) || (int)sn[i] == 90)
-            {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(5);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(1);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(8);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(2);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(8);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(4);
-                else deliveryNo.Add(4);
-            }
-            else
-            {
-                if ((int)licenseNo[i] >= 65 && (int)licenseNo[i] <= 69) deliveryNo.Add(0);
-                else if ((int)licenseNo[i] >= 70 && (int)licenseNo[i] <= 74) deliveryNo.Add(1);
-                else if ((int)licenseNo[i] >= 75 && (int)licenseNo[i] <= 79) deliveryNo.Add(0);
-                else if ((int)licenseNo[i] >= 80 && (int)licenseNo[i] <= 84) deliveryNo.Add(7);
-                else if ((int)licenseNo[i] >= 85 && (int)licenseNo[i] <= 89) deliveryNo.Add(5);
-                else if (((int)licenseNo[i] >= 48 && (int)licenseNo[i] <= 52) || (int)licenseNo[i] == 90) deliveryNo.Add(4);
-                else deliveryNo.Add(0);
-            }
+            //Debug.LogFormat("{0},{1}", idxLis, idxSn);
+            if (idxSn >= 0 && idxLis >= 0)
+                deliveryNo.Add(digitTable[idxSn, idxLis]);
+
         }
     }
 
@@ -516,7 +531,7 @@ public class bombDiffusalScript : MonoBehaviour
         return true;
     }
 
-    String GetPortName(int port)
+    string GetPortName(int port)
     {
         switch (port)
         {
@@ -538,219 +553,194 @@ public class bombDiffusalScript : MonoBehaviour
         return "???";
     }
 
-    String GetValues(char[] array)
+    Dictionary<int, string> sectorNames = new Dictionary<int, string>() {
+        { 1, "USA #1" },
+        { 2, "USA #2" },
+        { 3, "Rest of America" },
+        { 4, "Eurasia" },
+        { 5, "Africa" },
+        { 6, "Space" },
+    };
+    Dictionary<int, string> areaNames = new Dictionary<int, string>() {
+        // USA #1
+        { 100, "Alabama" },
+        { 101, "Alaska" },
+        { 102, "Arizona" },
+        { 103, "Arkansas" },
+        { 104, "California" },
+        { 110, "Colorado" },
+        { 111, "Connecticut" },
+        { 112, "Delaware" },
+        { 113, "Florida" },
+        { 114, "Georgia" },
+        { 120, "Hawaii" },
+        { 121, "Idaho" },
+        { 122, "Illinois" },
+        { 123, "Indiana" },
+        { 124, "Iowa" },
+        { 130, "Kansas" },
+        { 131, "Kentucky" },
+        { 132, "Louisiana" },
+        { 133, "Maine" },
+        { 134, "Maryland" },
+        { 140, "Massachusetts" },
+        { 141, "Michigan" },
+        { 142, "Minnesota" },
+        { 143, "Mississippi" },
+        { 144, "Missouri" },
+
+        { 200, "Montana" },
+        { 201, "Nebraska" },
+        { 202, "Nevada" },
+        { 203, "New Hampshire" },
+        { 204, "New Jersey" },
+        { 210, "New Mexico" },
+        { 211, "New York" },
+        { 212, "North Carolina" },
+        { 213, "North Dakota" },
+        { 214, "Ohio" },
+        { 220, "Oklahoma" },
+        { 221, "Oregon" },
+        { 222, "Pennsylvania" },
+        { 223, "Rhode Island" },
+        { 224, "South Carolina" },
+        { 230, "South Dakota" },
+        { 231, "Tennessee" },
+        { 232, "Texas" },
+        { 233, "Utah" },
+        { 234, "Vermont" },
+        { 240, "Virginia" },
+        { 241, "Washington" },
+        { 242, "West Virginia" },
+        { 243, "Wisconsin" },
+        { 244, "Wyoming" },
+
+        { 300, "Canada" },
+        { 301, "Mexico" },
+        { 302, "Argentina" },
+        { 303, "Brazil" },
+        { 304, "Bolivia" },
+        { 310, "Chile" },
+        { 311, "Colombia" },
+        { 312, "Ecuador" },
+        { 313, "Guyana" },
+        { 314, "Paraguay" },
+        { 320, "Peru" },
+        { 321, "Suriname" },
+        { 322, "Uruguay" },
+        { 323, "Venezuela" },
+        { 324, "Belize" },
+        { 330, "Costa Rica" },
+        { 331, "El Salvador" },
+        { 332, "Guatemala" },
+        { 333, "Honduras" },
+        { 334, "Nicaragua" },
+        { 340, "Panama" },
+        { 341, "Dominican Republic" },
+        { 342, "Bahamas" },
+        { 343, "Barbados" },
+        { 344, "Haiti" },
+
+        { 400, "China" },
+        { 401, "Germany" },
+        { 402, "India" },
+        { 403, "France" },
+        { 404, "Indonesia" },
+        { 410, "Croatia" },
+        { 411, "Pakistan" },
+        { 412, "Spain" },
+        { 413, "Bangladesh" },
+        { 414, "Italy" },
+        { 420, "Japan" },
+        { 421, "United Kingdom" },
+        { 422, "Philippines" },
+        { 423, "Switzerland" },
+        { 424, "Vietnam" },
+        { 430, "Belgium" },
+        { 431, "Iran" },
+        { 432, "Greece" },
+        { 433, "South Korea" },
+        { 434, "Netherlands" },
+        { 440, "Laos" },
+        { 441, "Poland" },
+        { 442, "Thailand" },
+        { 443, "Sweden" },
+        { 444, "Russia" },
+
+        { 500, "South Africa" },
+        { 501, "Nigeria" },
+        { 502, "Morocco" },
+        { 503, "Kenya" },
+        { 504, "Senegal" },
+        { 510, "Ghana" },
+        { 511, "DRC" },
+        { 512, "Ethiopia" },
+        { 513, "Algeria" },
+        { 514, "Tanzania" },
+        { 520, "Tunisia" },
+        { 521, "Cameroon" },
+        { 522, "Uganda" },
+        { 523, "Mali" },
+        { 524, "Zimbabwe" },
+        { 530, "Madagascar" },
+        { 531, "Angola" },
+        { 532, "Sudan" },
+        { 533, "Namibia" },
+        { 534, "Zambia" },
+        { 540, "Somalia" },
+        { 541, "Libya" },
+        { 542, "Niger" },
+        { 543, "Swaziland" },
+        { 544, "Egypt" },
+
+        { 600, "Mercury" },
+        { 601, "Venus" },
+        { 602, "Mars" },
+        { 603, "Jupiter" },
+        { 604, "Saturn" },
+        { 610, "Uranus" },
+        { 611, "Neptune" },
+        { 612, "The Moon" },
+        { 613, "Titan" },
+        { 614, "Io" },
+        { 620, "Europa" },
+        { 621, "Triton" },
+        { 622, "Callisto" },
+        { 623, "Ganymede" },
+        { 624, "Rhea" },
+        { 630, "Umbriel" },
+        { 631, "Oberon" },
+        { 632, "Phoebe" },
+        { 633, "The Sun" },
+        { 634, "Asteroid Belt" },
+        { 640, "Pluto" },
+        { 641, "Kepler-1638b" },
+        { 642, "The ISS" },
+        { 643, "Kepler-1229b" },
+        { 644, "Kepler-452b" },
+    };
+
+
+    string GetSectorName(int sector)
     {
-        string ret = "";
-        foreach (char val in array)
-            ret += val;
-        return ret;
+        return sectorNames.ContainsKey(sector) ? sectorNames[sector] : "???";
     }
-
-    String GetValues(String[] array)
+   
+    string GetAreaName(int area)
     {
-        string ret = "";
-        foreach (String val in array)
-            ret += val + ", ";
-        return ret;
-    }
-
-    String GetValues(int[] array)
-    {
-        string ret = "";
-        foreach (int val in array)
-            ret += val;
-        return ret;
-    }
-
-    String GetSectorName(int sector)
-    {
-        switch (sector)
-        {
-            case 1: return "USA #1";
-            case 2: return "USA #2";
-            case 3: return "Rest of America";
-            case 4: return "Eurasia";
-            case 5: return "Africa";
-            case 6: return "Space";
-        }
-
-        return "???";
-    }
-
-    String GetAreaName(int area)
-    {
-        switch (area)
-        {
-            case 100: return "Alabama";
-            case 101: return "Alaska";
-            case 102: return "Arizona";
-            case 103: return "Arkansas";
-            case 104: return "California";
-            case 110: return "Colorado";
-            case 111: return "Connecticut";
-            case 112: return "Delaware";
-            case 113: return "Florida";
-            case 114: return "Georgia";
-            case 120: return "Hawaii";
-            case 121: return "Idaho";
-            case 122: return "Illinois";
-            case 123: return "Indiana";
-            case 124: return "Iowa";
-            case 130: return "Kansas";
-            case 131: return "Kentucky";
-            case 132: return "Louisiana";
-            case 133: return "Maine";
-            case 134: return "Maryland";
-            case 140: return "Massachusetts";
-            case 141: return "Michigan";
-            case 142: return "Minnesota";
-            case 143: return "Mississipi";
-            case 144: return "Missouri";
-
-            case 200: return "Montana";
-            case 201: return "Nebraska";
-            case 202: return "Nevada";
-            case 203: return "New Hampshire";
-            case 204: return "New Jersey";
-            case 210: return "New Mexico";
-            case 211: return "New York";
-            case 212: return "North Carolina";
-            case 213: return "North Dakota";
-            case 214: return "Ohio";
-            case 220: return "Oklahoma";
-            case 221: return "Oregon";
-            case 222: return "Pennsylvania";
-            case 223: return "Rhode Island";
-            case 224: return "South Carolina";
-            case 230: return "South Dakota";
-            case 231: return "Tennessee";
-            case 232: return "Texas";
-            case 233: return "Utah";
-            case 234: return "Vermont";
-            case 240: return "Virginia";
-            case 241: return "Washington";
-            case 242: return "West Virginia";
-            case 243: return "Wisconsin";
-            case 244: return "Wyoming";
-
-            case 300: return "Canada";
-            case 301: return "Mexico";
-            case 302: return "Argentina";
-            case 303: return "Brazil";
-            case 304: return "Bolivia";
-            case 310: return "Chile";
-            case 311: return "Colombia";
-            case 312: return "Ecuador";
-            case 313: return "Guyana";
-            case 314: return "Paraguay";
-            case 320: return "Peru";
-            case 321: return "Suriname";
-            case 322: return "Uruguay";
-            case 323: return "Venezuela";
-            case 324: return "Belize";
-            case 330: return "Costa Rica";
-            case 331: return "El Salvador";
-            case 332: return "Guatemala";
-            case 333: return "Honduras";
-            case 334: return "Nicaragua";
-            case 340: return "Panama";
-            case 341: return "Dominican Republic";
-            case 342: return "Bahamas";
-            case 343: return "Barbados";
-            case 344: return "Haiti";
-
-            case 400: return "China";
-            case 401: return "Germany";
-            case 402: return "India";
-            case 403: return "France";
-            case 404: return "Indonesia";
-            case 410: return "Croatia";
-            case 411: return "Pakistan";
-            case 412: return "Spain";
-            case 413: return "Bangladesh";
-            case 414: return "Italy";
-            case 420: return "Japan";
-            case 421: return "UK";
-            case 422: return "Philippines";
-            case 423: return "Switzerland";
-            case 424: return "Vietnam";
-            case 430: return "Belgium";
-            case 431: return "Iran";
-            case 432: return "Greece";
-            case 433: return "South Korea";
-            case 434: return "Netherlands";
-            case 440: return "Laos";
-            case 441: return "Poland";
-            case 442: return "Thailand";
-            case 443: return "Sweden";
-            case 444: return "Russia";
-
-            case 500: return "South Africa";
-            case 501: return "Nigeria";
-            case 502: return "Morocco";
-            case 503: return "Kenya";
-            case 504: return "Senegal";
-            case 510: return "Ghana";
-            case 511: return "DRC";
-            case 512: return "Ethiopia";
-            case 513: return "Algeria";
-            case 514: return "Tanzania";
-            case 520: return "Tunisia";
-            case 521: return "Cameroon";
-            case 522: return "Uganda";
-            case 523: return "Mali";
-            case 524: return "Zimbabwe";
-            case 530: return "Madagascar";
-            case 531: return "Angola";
-            case 532: return "Sudan";
-            case 533: return "Namibia";
-            case 534: return "Zambia";
-            case 540: return "Somalia";
-            case 541: return "Libya";
-            case 542: return "Niger";
-            case 543: return "Swaziland";
-            case 544: return "Egypt";
-
-            case 600: return "Mercury";
-            case 601: return "Venus";
-            case 602: return "Mars";
-            case 603: return "Jupiter";
-            case 604: return "Saturn";
-            case 610: return "Uranus";
-            case 611: return "Neptune";
-            case 612: return "The Moon";
-            case 613: return "Titan";
-            case 614: return "Io";
-            case 620: return "Europa";
-            case 621: return "Triton";
-            case 622: return "Callisto";
-            case 623: return "Ganymede";
-            case 624: return "Rhea";
-            case 630: return "Umbriel";
-            case 631: return "Oberon";
-            case 632: return "Phoebe";
-            case 633: return "The Sun";
-            case 634: return "Asteroid Belt";
-            case 640: return "Pluto";
-            case 641: return "Kepler-1638b";
-            case 642: return "The ISS";
-            case 643: return "Kepler-1229b";
-            case 644: return "Kepler-452b";
-        }
-
-        return "???";
+        return areaNames.ContainsKey(area) ? areaNames[area] : "???";
     }
 
     Material GetFlag(int dest)
     {
         switch (dest / 100)
         {
-            case 1: return usa1[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 2: return usa2[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 3: return america[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 4: return eurasia[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 5: return africa[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 6: return space[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
+            case 1: return usa1[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 2: return usa2[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 3: return america[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 4: return eurasia[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 5: return africa[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 6: return space[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
         }
 
         return null;
@@ -760,12 +750,12 @@ public class bombDiffusalScript : MonoBehaviour
     {
         switch (dest / 100)
         {
-            case 1: return usa1Stamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 2: return usa2Stamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 3: return americaStamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 4: return eurasiaStamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 5: return africaStamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
-            case 6: return spaceStamp[(((selectedDestination % 100) / 10) * 5) + selectedDestination % 10];
+            case 1: return usa1Stamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 2: return usa2Stamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 3: return americaStamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 4: return eurasiaStamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 5: return africaStamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
+            case 6: return spaceStamp[(selectedDestination % 100 / 10 * 5) + selectedDestination % 10];
         }
 
         return null;
@@ -773,16 +763,18 @@ public class bombDiffusalScript : MonoBehaviour
 
     IEnumerator PrintManifest()
     {
-        String[] message = new String[] { "--==Shipping Manifest==--\n",
+        int sectorVal = goalDestination / 100;
+
+        string[] message = new string[] { "--==Shipping Manifest==--\n",
                                           "\n",
-                                          "Delivery Nº: " + GetValues(deliveryNo.ToArray()) + "\n",
+                                          string.Format("Delivery Nº: {0}\n", deliveryNo.Join("")),
                                           "\n",
                                           "From: Steel Crate Games,\n",
                                           "Ottawa, Ontario, Canada\n",
                                           "\n",
-                                          "To: " + GetAreaName(destination) + ",\n",
-                                          GetSectorName(destination / 100) + "\n",
-                                          "Area Code: " + destination + "\n",
+                                          string.Format("To: {0},\n", GetAreaName(goalDestination)),
+                                          string.Format("{0}\n", GetSectorName(sectorVal)),
+                                          string.Format("Area Code: {0}\n",goalDestination),
                                           "\n",
                                           "Content Details: \n",
                                           "   - Bomb;\n",
@@ -817,18 +809,23 @@ public class bombDiffusalScript : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        int[] vertical = new int[] { 110, 122, 124, 134, 141, 142, 144, 203, 223, 224, 230, 231, 233, 240, 241, 311, 312, 313, 321, 330, 332, 333, 342, 400, 432, 434, 441, 444, 511, 520, 523, 540, 541 };
+        int[] vertical = new int[] { 110, 122, 124, 134, 141, 142, 144,
+            203, 223, 224, 230, 231, 233, 240, 241,
+            311, 312, 313, 321, 330, 332, 333, 342,
+            400, 432, 434, 441, 444,
+            511, 520, 523, 540, 541 };
 
         Audio.PlaySoundAtTransform("paper", transform);
-        postStamp.GetComponentInChildren<Renderer>().material = GetStamp(destination);
-        if (vertical.ToList().Contains(destination)) postStamp.transform.Rotate(0, 90f, 0);
+        postStamp.GetComponentInChildren<Renderer>().material = GetStamp(goalDestination);
+        if (vertical.ToList().Contains(goalDestination)) postStamp.transform.Rotate(0, 90f, 0);
         postStamp.SetActive(true);
+        selectableSelf.AddInteractionPunch(2f);
 
         yield return new WaitForSeconds(0.3f);
 
         stamp.SetActive(true);
         Audio.PlaySoundAtTransform("stamp", transform);
-        GetComponent<KMBombModule>().HandlePass();
+        modSelf.HandlePass();
     }
 
     //twitch plays
@@ -850,362 +847,555 @@ public class bombDiffusalScript : MonoBehaviour
     }
     private bool isNumValid(string cmd)
     {
-        string[] nums = { "0","1","2","3","4","5","6","7","8","9" };
+        string[] nums = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         if (nums.Contains(cmd))
         {
             return true;
         }
         return false;
     }
-    private string[] getSecAndArea(string cmd)
+    IEnumerator TwitchHandleForcedSolve()
     {
-        cmd = cmd.Remove(0, 12);
-        return cmd.Split(';');
+        while (goalDestination != selectedDestination || goalBatteries != selectedBatteries || goalIndicators != selectedIndicators || goalManuals != selectedManuals || selectedPortIdx != goalPortIdx)
+        {
+            if (goalDestination != selectedDestination)
+            {
+                if (!menus[1].activeSelf)
+                {
+                    if (menus[2].activeSelf)
+                    {
+                        componentBack.OnInteract();
+                        yield return null;
+                    }
+                    destinationButton.OnInteract();
+                    yield return null;
+                }
+                while (goalDestination / 100 != selectedDestination / 100)
+                {
+                    nextSector.OnInteract();
+                    yield return null;
+                }
+                while (goalDestination % 100 != selectedDestination % 100)
+                {
+                    nextArea.OnInteract();
+                    yield return null;
+                }
+                destinationBack.OnInteract();
+                yield return null;
+            }
+
+            if (goalBatteries != selectedBatteries || goalIndicators != selectedIndicators || goalManuals != selectedManuals || selectedPortIdx != goalPortIdx)
+            {
+                if (!menus[2].activeSelf)
+                {
+                    if (menus[1].activeSelf)
+                    {
+                        destinationBack.OnInteract();
+                        yield return null;
+                    }
+                    componentButton.OnInteract();
+                    yield return null;
+                }
+                while (goalBatteries != selectedBatteries)
+                {
+                    if (goalBatteries > selectedBatteries)
+                        addBattery.OnInteract();
+                    else
+                        subBattery.OnInteract();
+                    yield return null;
+                }
+                while (goalIndicators != selectedIndicators)
+                {
+                    if (goalIndicators > selectedIndicators)
+                        addIndicator.OnInteract();
+                    else
+                        subIndicator.OnInteract();
+                    yield return null;
+                }
+                while (goalManuals != selectedManuals)
+                {
+                    if (goalManuals > selectedManuals)
+                        addManual.OnInteract();
+                    else
+                        subManual.OnInteract();
+                    yield return null;
+                }
+                while (selectedPortIdx != goalPortIdx)
+                {
+                    nextPort.OnInteract();
+                    yield return null;
+                }
+                componentBack.OnInteract();
+                yield return null;
+            }
+
+            yield return null;
+        }
+
+        goButton.OnInteract();
+        yield return true;
     }
 
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} open <menu> [Opens the specified menu, the three valid menus are 'Main', 'Destination', and 'Components'] | !{0} back [Heads back to the main menu] | !{0} destination USA #1;Delaware [Sets the destination's sector and area] | !{0} component batteries 2 [Sets the specified component of batteries, indicators, port (NO SPACES IN PORT NAMES), or manuals] | !{0} component cycleportsleft [Cycles through all ports in the 'Components' menu to the left] | !{0} tilt r [Use to see ports on the right side of the B.D.S., this command is a general TP command] | !{0} go [Submits the current configuration]";
-    #pragma warning restore 414
+    private readonly string TwitchHelpMessage = "Open the specified menu with \"!{0} open Main/Destination/Components\" Go back to the main menu with \"!{0} back\"\n" +
+        "Set both the destination's sector and area with \"!{0} set destination <Sector Name>;<Area Name>\" (',' can be used instead of ';'.)"
+        + "Set just the destination's sector or area with \"!{0} set sector/area <Sector Name>/<Area Name>\""
+        + "Set the specified components with \"!{0} set component batteries/manuals/indicators #\""
+        + "Cycle the options on the ports left or right with \"!{0} component cycleports left/right\" \"set\" is optional. To check on the ports, you may use \"!{0} tilt r\" to check. (This is a general TP command.) Submit the configurations with \"!{0} go/submit/send\"";
+#pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
     {
-        if (Regex.IsMatch(command, @"^\s*go\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        if (Application.isEditor)
+        {
+            command = command.Trim();
+        }
+        if (menus[3].activeSelf)
+        {
+            yield return "sendtochaterror {0}, Bomb Diffusal (#{1}) is printing out the receipt. No other commands can be accepted.";
+            yield break;
+        }
+        string intereptedCommand = command.Trim().ToLower();
+        if (Regex.IsMatch(command, @"^(go|submit|send)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
-            if (menus[1].active == true)
+            if (menus[1].activeSelf)
             {
                 destinationBack.OnInteract();
                 yield return new WaitForSeconds(0.3f);
             }
-            else if (menus[2].active == true)
+            else if (menus[2].activeSelf)
             {
                 componentBack.OnInteract();
                 yield return new WaitForSeconds(0.3f);
-            }
-            else if (menus[3].active == true)
-            {
-                yield return "sendtochat Bomb Diffusal: Why would I want to submit when I'm already submitting?";
             }
             goButton.OnInteract();
+            if (menus[3].activeSelf)
+            {
+                yield return "solve";
+            }
             yield break;
         }
-        if (Regex.IsMatch(command, @"^\s*back\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        else if (Regex.IsMatch(command, @"^back\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
             yield return null;
-            if (menus[1].active == true)
+            if (menus[1].activeSelf)
             {
                 destinationBack.OnInteract();
-                yield return new WaitForSeconds(0.3f);
             }
-            else if (menus[2].active == true)
+            else if (menus[2].activeSelf)
             {
                 componentBack.OnInteract();
-                yield return new WaitForSeconds(0.3f);
             }
-            else if (menus[3].active == true)
+            else if (menus[0].activeSelf == true)
             {
-                yield return "sendtochat Bomb Diffusal: Why would I want to go back now when I'm submitting?";
-            }
-            else if (menus[0].active == true)
-            {
-                yield return "sendtochat Bomb Diffusal: Haven't I gone back enough?";
+                yield return "sendtochat Has {0} gone back enough on Bomb Diffusal (#{1})?";
             }
             yield break;
         }
-        string[] parameters = command.Split(' ');
-        if (Regex.IsMatch(parameters[0], @"^\s*destination\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        else if (Regex.IsMatch(command, @"^open\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
         {
-            if (parameters.Length >= 2 && command.Contains(";"))
+            intereptedCommand = intereptedCommand.Substring(5);
+            Dictionary<int, string[]> menuIdIntereperations = new Dictionary<int, string[]>() {
+                { 0, new string[] { "Main" } },
+                { 1, new string[] { "Destination", "Dest" } },
+                { 2, new string[] { "Components", "Component", "Comp" } },
+            };// 0 being the main menu, 1 being the destination, 2 being the component, 3 being the receipt menu
+            int destinationID = -1;
+
+            foreach (KeyValuePair<int, string[]> curIntereptation in menuIdIntereperations)
+            {
+                if (curIntereptation.Value.Any(a => a.EqualsIgnoreCase(intereptedCommand)))
+                {
+                    destinationID = curIntereptation.Key;
+                    break;
+                }
+            }
+            if (destinationID < 0 || destinationID > 2)
+            {
+                yield return string.Format("sendtochaterror I cannot find the menu \"{0}\" in the directory.", intereptedCommand);
+                yield break;
+            }
+            if (menus[destinationID].activeSelf)
+            {
+                yield return string.Format("sendtochaterror I am already in the menu \"{0}\" in the directory.", intereptedCommand);
+                yield break;
+            }
+            KMSelectable[] respectiveDestinationButtons = { null, destinationButton, componentButton };
+            if (menus[1].activeSelf)
             {
                 yield return null;
-                if (menus[1].active == true)
-                {
-                    int counter = 0;
-                    string[] stuff = getSecAndArea(command);
-                    int rand = UnityEngine.Random.Range(0, 2);
-                    while (!menus[1].transform.Find("sector").gameObject.GetComponentInChildren<TextMesh>().text.EqualsIgnoreCase(stuff[0]))
-                    {
-                        if (counter == 6)
-                        {
-                            yield return "sendtochaterror Bomb Diffusal: I could not find the sector '" + stuff[0] + "' in my directory!";
-                            yield break;
-                        }
-                        counter++;
-                        if (rand == 0)
-                        {
-                            nextSector.OnInteract();
-                        }
-                        else
-                        {
-                            prevSector.OnInteract();
-                        }
-                        yield return new WaitForSeconds(0.1f);
-                    }
-                    counter = 0;
-                    rand = UnityEngine.Random.Range(0, 2);
-                    while (!menus[1].transform.Find("area").gameObject.GetComponentInChildren<TextMesh>().text.EqualsIgnoreCase(stuff[1]))
-                    {
-                        if (counter == 25)
-                        {
-                            yield return "sendtochaterror Bomb Diffusal: I could not find the area '" + stuff[1] + "' in my directory!";
-                            yield break;
-                        }
-                        counter++;
-                        if (rand == 0)
-                        {
-                            nextArea.OnInteract();
-                        }
-                        else
-                        {
-                            prevArea.OnInteract();
-                        }
-                        yield return new WaitForSeconds(0.1f);
-                    }
-                }
-                else
-                {
-                    yield return "sendtochat Bomb Diffusal: I need to be on the Destination Menu to set a destination.";
-                }
+                destinationBack.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (menus[2].activeSelf)
+            {
+                yield return null;
+                componentBack.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            if (respectiveDestinationButtons[destinationID] != null)
+            {
+                yield return null;
+                respectiveDestinationButtons[destinationID].OnInteract();
             }
             yield break;
         }
-        if (Regex.IsMatch(parameters[0], @"^\s*open\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        else
         {
-            if (parameters.Length == 2)
+            if (Regex.IsMatch(command, @"^set\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                command = command.Substring(4);
+            if (Regex.IsMatch(command, @"^destination\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
-                if (inputIsValid(parameters[1]))
+                Dictionary<string, string[]> alternativeSectorNames = new Dictionary<string, string[]>() {
+                                {"USA #1",  new string[] { "USA 1", "USA#1", "USA1" } },
+                                {"USA #2",  new string[] { "USA 2", "USA#2", "USA2" } },
+                                {"Rest of America",  new string[] { "RestOfAmerica", "RestOf America", "Rest OfAmerica" } },
+                            };
+                string[] intereptedParts = intereptedCommand.Substring(12).Split(new char[] { ',', ';' });
+                if (intereptedParts.Length != 2)
                 {
-                    if (parameters[1].EqualsIgnoreCase("Main"))
+                    yield return string.Format("sendtochaterror You provided {0} than 2 pieces of infomation for setting the destination. I expected exactly 2, the sector name and the area name.", intereptedParts.Length > 2 ? "more" : "less");
+                    yield break;
+                }
+                string intereptedSectorName = intereptedParts[0].Trim();
+                string intereptedAreaName = intereptedParts[1].Trim();
+                foreach (KeyValuePair<string, string[]> altSectorNames in alternativeSectorNames)
+                {
+                    if (altSectorNames.Value.Any(a => a.EqualsIgnoreCase(intereptedSectorName)))
                     {
-                        yield return null;
-                        if (menus[1].active == true)
-                        {
-                            destinationBack.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        else if (menus[2].active == true)
-                        {
-                            componentBack.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        else if (menus[3].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: Why would I want to do that now when I'm submitting?";
-                        }
-                        else if (menus[0].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: I'm already here aint I?";
-                        }
-                        yield break;
-                    }
-                    else if (parameters[1].EqualsIgnoreCase("Destination"))
-                    {
-                        yield return null;
-                        if (menus[1].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: I'm already here aint I?";
-                        }
-                        else if (menus[2].active == true)
-                        {
-                            componentBack.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                            destinationButton.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        else if (menus[3].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: Why would I want to do that now when I'm submitting?";
-                        }
-                        else if (menus[0].active == true)
-                        {
-                            destinationButton.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        yield break;
-                    }
-                    else if (parameters[1].EqualsIgnoreCase("Components"))
-                    {
-                        yield return null;
-                        if (menus[1].active == true)
-                        {
-                            destinationBack.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                            componentButton.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        else if (menus[2].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: I'm already here aint I?";
-                        }
-                        else if (menus[3].active == true)
-                        {
-                            yield return "sendtochat Bomb Diffusal: Why would I want to do that now when I'm submitting?";
-                        }
-                        else if (menus[0].active == true)
-                        {
-                            componentButton.OnInteract();
-                            yield return new WaitForSeconds(0.3f);
-                        }
-                        yield break;
+                        intereptedSectorName = altSectorNames.Key;
+                        break;
                     }
                 }
-                else
+                bool directionR = rnd.value < 0.5f, successful = false;
+                if (!menus[1].activeSelf)
                 {
-                    yield return "sendtochaterror Bomb Diffusal: I could not find the menu '" + parameters[1] + "' in my menu directory!";
+                    if (menus[2].activeSelf)
+                    {
+                        yield return null;
+                        componentBack.OnInteract();
+                    }
+                    yield return null;
+                    destinationButton.OnInteract();
                 }
+                for (int x = 0; x < 6 && !successful; x++)
+                {
+                    yield return null;
+                    if (directionR)
+                        nextSector.OnInteract();
+                    else
+                        prevSector.OnInteract();
+                    if (sectorNames[selectedDestination / 100].EqualsIgnoreCase(intereptedSectorName))
+                    {
+                        successful = true;
+                    }
+                    yield return new WaitForSeconds(0.1f);
+                }
+                if (!successful)
+                {
+                    yield return string.Format("sendtochaterror I cannot find the given sector \"{0}\" in the directory.", intereptedSectorName);
+                    yield break;
+                }
+                directionR = rnd.value < 0.5f;
+                successful = false;
+                for (int x = 0; x < 25 && !successful; x++)
+                {
+                    yield return null;
+                    if (directionR)
+                        nextArea.OnInteract();
+                    else
+                        prevArea.OnInteract();
+                    if (areaNames[selectedDestination].EqualsIgnoreCase(intereptedAreaName))
+                    {
+                        successful = true;
+                    }
+                    yield return new WaitForSeconds(0.1f);
+                }
+                if (!successful)
+                {
+                    yield return string.Format("sendtochaterror I cannot find the given area \"{0}\" in the directory.", intereptedAreaName);
+                    yield break;
+                }
+
             }
-        }
-        if (Regex.IsMatch(parameters[0], @"^\s*component\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
-            if (parameters.Length == 3)
+            else if (Regex.IsMatch(command, @"^sector\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
-                if(isTypeValid(parameters[1]))
+                Dictionary<string, string[]> alternativeSectorNames = new Dictionary<string, string[]>() {
+                                {"USA #1",  new string[] { "USA 1", "USA#1", "USA1" } },
+                                {"USA #2",  new string[] { "USA 2", "USA#2", "USA2" } },
+                                {"Rest of America",  new string[] { "RestOfAmerica", "RestOf America", "Rest OfAmerica" } },
+                            };
+                string intereptedSectorName = intereptedCommand.Substring(7).Trim();
+
+                foreach (KeyValuePair<string, string[]> altSectorNames in alternativeSectorNames)
                 {
-                    if (menus[2].active == true)
+                    if (altSectorNames.Value.Any(a => a.EqualsIgnoreCase(intereptedSectorName)))
                     {
-                        if (parameters[1].EqualsIgnoreCase("port"))
+                        intereptedSectorName = altSectorNames.Key;
+                        break;
+                    }
+                }
+                bool directionR = rnd.value < 0.5f, successful = false;
+                if (!menus[1].activeSelf)
+                {
+                    if (menus[2].activeSelf)
+                    {
+                        yield return null;
+                        componentBack.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    yield return null;
+                    destinationButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                }
+                for (int x = 0; x < 6 && !successful; x++)
+                {
+                    yield return null;
+                    if (directionR)
+                        nextSector.OnInteract();
+                    else
+                        prevSector.OnInteract();
+                    if (sectorNames[selectedDestination / 100].EqualsIgnoreCase(intereptedSectorName))
+                    {
+                        successful = true;
+                    }
+                    yield return new WaitForSeconds(0.1f);
+                }
+                if (!successful)
+                {
+                    yield return string.Format("sendtochaterror I cannot find the given sector \"{0}\" in the directory.", intereptedSectorName);
+                    yield break;
+                }
+
+            }
+            else if (Regex.IsMatch(command, @"^area\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                string intereptedAreaName = intereptedCommand.Substring(5).Trim();
+                bool directionR = rnd.value < 0.5f, successful = false;
+                if (!menus[1].activeSelf)
+                {
+                    if (menus[2].activeSelf)
+                    {
+                        yield return null;
+                        componentBack.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    yield return null;
+                    destinationButton.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                }
+                for (int x = 0; x < 25 && !successful; x++)
+                {
+                    yield return null;
+                    if (directionR)
+                        nextArea.OnInteract();
+                    else
+                        prevArea.OnInteract();
+                    if (areaNames[selectedDestination].EqualsIgnoreCase(intereptedAreaName))
+                    {
+                        successful = true;
+                    }
+                    yield return new WaitForSeconds(0.1f);
+                }
+                if (!successful)
+                {
+                    yield return string.Format("sendtochaterror I cannot find the given area \"{0}\" in the directory.", intereptedAreaName);
+                    yield break;
+                }
+
+            }
+            else if (Regex.IsMatch(command, @"^comp(onents?)?\s*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                intereptedCommand = intereptedCommand.Substring(intereptedCommand.StartsWith("components") ? 11 : intereptedCommand.StartsWith("component") ? 10 : 5);
+                if (Regex.IsMatch(intereptedCommand, @"^(batter(y|ies)|indicators?|manuals?)\s\d+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                {
+                    string[] parameters = intereptedCommand.Split();
+
+                    int value;
+                    if (!int.TryParse(parameters[1], out value))
+                    {
+                        yield return string.Format("sendtochaterror I do not know what number \"{0}\" is.", parameters[2]);
+                        yield break;
+                    }
+                    if (value < 0 || value > 9)
+                    {
+                        yield return string.Format("sendtochaterror I am not setting \"{1}\" to {0}.", value, parameters[0]);
+                        yield break;
+                    }
+                    if (!menus[2].activeSelf)
+                    {
+                        if (menus[1].activeSelf)
                         {
-                            int counter = 0;
-                            int rand = UnityEngine.Random.Range(0, 2);
-                            if (parameters[2].EqualsIgnoreCase("PS2"))
+                            yield return null;
+                            destinationBack.OnInteract();
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                        yield return null;
+                        componentButton.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    switch (parameters[0])
+                    {
+                        case "battery":
+                        case "batteries":
                             {
-                                parameters[2] = "PS/2";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("RCA"))
-                            {
-                                parameters[2] = "Stereo RCA";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("StereoRCA"))
-                            {
-                                parameters[2] = "Stereo RCA";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("ComponentVideo"))
-                            {
-                                parameters[2] = "Component Video";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("AC"))
-                            {
-                                parameters[2] = "AC Power";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("ACPower"))
-                            {
-                                parameters[2] = "AC Power";
-                            }
-                            else if (parameters[2].EqualsIgnoreCase("CompositeVideo"))
-                            {
-                                parameters[2] = "Composite Video";
-                            }
-                            while (!menus[2].transform.Find("ports").gameObject.GetComponentInChildren<TextMesh>().text.EqualsIgnoreCase(parameters[2]))
-                            {
-                                if (counter == 13)
+                                if (selectedBatteries == value)
                                 {
-                                    yield return "sendtochaterror Bomb Diffusal: I could not find the port '" + parameters[2] + "' in my directory!";
+                                    yield return string.Format("sendtochaterror The number of batteries is already set to {0}.", selectedBatteries);
                                     yield break;
                                 }
-                                yield return null;
-                                counter++;
-                                if (rand == 0)
+                                while (selectedBatteries != value)
                                 {
-                                    nextPort.OnInteract();
-                                }
-                                else
-                                {
-                                    prevPort.OnInteract();
-                                }
-                                yield return new WaitForSeconds(0.1f);
-                            }
-                        }
-                        else if (isNumValid(parameters[2]))
-                        {
-                            int temp = 0;
-                            int.TryParse(parameters[2], out temp);
-                            yield return null;
-                            if (parameters[1].EqualsIgnoreCase("batteries"))
-                            {
-                                if (temp < selectedBatteries)
-                                {
-                                    for (int i = selectedBatteries; i > temp; i--)
-                                    {
-                                        subBattery.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
-                                }
-                                else if (temp > selectedBatteries)
-                                {
-                                    for (int i = selectedBatteries; i < temp; i++)
-                                    {
+                                    yield return null;
+                                    if (selectedBatteries < value)
                                         addBattery.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
+                                    else
+                                        subBattery.OnInteract();
+                                    yield return new WaitForSeconds(0.1f);
                                 }
+                                break;
                             }
-                            else if (parameters[1].EqualsIgnoreCase("indicators"))
+                        case "indicator":
+                        case "indicators":
                             {
-                                if (temp < selectedIndicators)
+                                if (selectedIndicators == value)
                                 {
-                                    for (int i = selectedIndicators; i > temp; i--)
-                                    {
-                                        subIndicator.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
+                                    yield return string.Format("sendtochaterror The number of indicators is already set to {0}.", selectedIndicators);
+                                    yield break;
                                 }
-                                else if (temp > selectedIndicators)
+                                while (selectedIndicators != value)
                                 {
-                                    for (int i = selectedIndicators; i < temp; i++)
-                                    {
+                                    yield return null;
+                                    if (selectedIndicators < value)
                                         addIndicator.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
+                                    else
+                                        subIndicator.OnInteract();
+                                    yield return new WaitForSeconds(0.1f);
                                 }
+                                break;
                             }
-                            else if (parameters[1].EqualsIgnoreCase("manuals"))
+                        case "manuals":
+                        case "manual":
                             {
-                                if (temp < selectedManuals)
+                                if (selectedManuals == value)
                                 {
-                                    for (int i = selectedManuals; i > temp; i--)
-                                    {
-                                        subManual.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
+                                    yield return string.Format("sendtochaterror The number of manuals is already set to {0}.", selectedManuals);
+                                    yield break;
                                 }
-                                else if (temp > selectedManuals)
+                                while (selectedManuals != value)
                                 {
-                                    for (int i = selectedManuals; i < temp; i++)
-                                    {
+                                    yield return null;
+                                    if (selectedManuals < value)
                                         addManual.OnInteract();
-                                        yield return new WaitForSeconds(0.2f);
-                                    }
+                                    else
+                                        subManual.OnInteract();
+                                    yield return new WaitForSeconds(0.1f);
                                 }
+                                break;
                             }
-                        }
-                        else
-                        {
-                            yield return "sendtochaterror Bomb Diffusal: That number is out of the scope range of 0-9 or not a number!";
-                        }
-                    }
-                    else
-                    {
-                        yield return "sendtochat Bomb Diffusal: I need to be on the Components Menu to set components.";
+                        default:
+                            {
+                                yield return string.Format("sendtochaterror That should not have happened.");
+                                yield break;
+                            }
                     }
                 }
-            }else if(parameters.Length == 2)
-            {
-                if(menus[2].active == true)
+                else if (Regex.IsMatch(intereptedCommand, @"^cycleports?\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                 {
-                    if (parameters[1].EqualsIgnoreCase("cycleportsleft"))
+                    string intereptedDirection = intereptedCommand.Substring(intereptedCommand.StartsWith("cycleports") ? 11 : 10);
+                    Dictionary<string, string[]> alternativeDirectionIntereptations = new Dictionary<string, string[]>() {
+                        {"l",  new string[] { "left", } },
+                        {"r",  new string[] { "right", } },
+                        };
+                    foreach (KeyValuePair<string, string[]> altDirName in alternativeDirectionIntereptations)
                     {
-                        int counter = 0;
-                        while (counter < 13)
+                        if (altDirName.Value.Select(a => a.ToUpper()).Contains(intereptedDirection.ToUpper()))
                         {
-                            counter++;
-                            yield return "trycancel The port cycling has been cancelled due to a cancel request";
-                            prevPort.OnInteract();
-                            yield return new WaitForSeconds(0.9f);
+                            intereptedDirection = altDirName.Key;
+                            break;
                         }
+                    }
+                    if (!alternativeDirectionIntereptations.ContainsKey(intereptedDirection))
+                    {
+                        yield return string.Format("sendtochaterror I can only go left or right for cycling ports in the directory. I cannot go \"{0}.\"", intereptedDirection);
+                        yield break;
+                    }
+                    if (!menus[2].activeSelf)
+                    {
+                        if (menus[1].activeSelf)
+                        {
+                            yield return null;
+                            destinationBack.OnInteract();
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                        yield return null;
+                        componentButton.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    bool directionR = intereptedDirection.EqualsIgnoreCase("l");
+                    for (int x = 0; x < 14; x++)
+                    {
+                        yield return null;
+                        if (directionR)
+                            nextPort.OnInteract();
+                        else
+                            prevPort.OnInteract();
+                        yield return "trywaitcancel 1.0 Cycling ports has been canceled viva request.";
+                    }
+                }
+                else if (Regex.IsMatch(intereptedCommand, @"^port\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                {
+                    string intereptedPortName = intereptedCommand.Substring(5);
+                    Dictionary<string, string[]> alternativePortIntereptations = new Dictionary<string, string[]>() {
+                        {"PS/2",  new string[] { "PS2" } },
+                        {"Stereo RCA",  new string[] { "StereoRCA", "RCA" } },
+                        {"Component Video",  new string[] { "ComponentVideo" } },
+                        {"AC Power",  new string[] { "AC", "AC Power" } },
+                        {"Composite Video",  new string[] { "CompositeVideo" } },
+                        };
+                    foreach (KeyValuePair<string, string[]> altPortName in alternativePortIntereptations)
+                    {
+                        if (altPortName.Value.Select(a => a.ToUpper()).Contains(intereptedPortName))
+                        {
+                            intereptedPortName = altPortName.Key;
+                            break;
+                        }
+                    }
+                    if (!menus[2].activeSelf)
+                    {
+                        if (menus[1].activeSelf)
+                        {
+                            yield return null;
+                            destinationBack.OnInteract();
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                        yield return null;
+                        componentButton.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    bool directionR = rnd.value < 0.5f, successful = false;
+                    for (int x = 0; x < 14 && !successful; x++)
+                    {
+                        yield return null;
+                        if (directionR)
+                            nextPort.OnInteract();
+                        else
+                            prevPort.OnInteract();
+                        if (ports[selectedPortIdx].EqualsIgnoreCase(intereptedPortName))
+                        {
+                            successful = true;
+                            break;
+                        }
+                    }
+                    if (!successful)
+                    {
+                        yield return string.Format("sendtochaterror I cannot seem to find the port \"{0}\" in the directory.", intereptedPortName);
+                        yield break;
                     }
                 }
                 else
                 {
-                    yield return "sendtochat Bomb Diffusal: I need to be on the Components Menu to set components.";
+                    yield break;
                 }
             }
         }

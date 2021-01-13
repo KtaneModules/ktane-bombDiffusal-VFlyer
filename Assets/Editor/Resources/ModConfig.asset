@@ -12,16 +12,20 @@ MonoBehaviour:
   m_Name: ModConfig
   m_EditorClassIdentifier: 
   id: bombDiffusal
-  title: Bomb Diffusal
+  title: Bomb Diffusal [REUPLOAD]
   description: "Remember kids: diffuse is to, \u201Cspread or cause to spread over
     a wide area or among a large number of people\u201D, and defuse is \u201Cto remove
     the fuse from (an explosive device) in order to prevent it from exploding.\u201D
-    Learn the difference. Spread the truth. And don\u2019t make that mistake.\n\r\nModule
-    by EpicToast\r\nImplemented by TheThirdMan\r\nmoduleID: bombDiffusal\r\n\r\nManual
-    HTML: https://ktane.timwi.de/HTML/Bomb%20Diffusal.html\r\nManual PDF: https://ktane.timwi.de/PDF/Bomb%20Diffusal.pdf\r\n\r\nGitHub
-    Repository: https://github.com/luisdiogo98/ktane-bombDiffusal\n\r\nAny problems/suggestions,
-    feel free to contact me on the KTaNE Discord @TheThirdMan. Join the KTaNE Discord
-    here: https://discord.gg/Fv7YEDj"
-  version: 1.3
+    Learn the difference. Spread the truth. And don\u2019t make that mistake.\n\n\r[b]This
+    is a reupload of a module by the original author. Please disable/unsubscribe to
+    the older version  [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1792010255]here.[/url][/b]\n\nManual
+    by EpicToast\r\nOriginally implemented by TheThirdMan\r\nReuploaded and Maintained
+    by VFlyer\nmoduleID: bombDiffusal\r\n\r\nManual HTML: https://ktane.timwi.de/HTML/Bomb%20Diffusal.html\r\nManual
+    PDF: https://ktane.timwi.de/PDF/Bomb%20Diffusal.pdf\r\n\r\nGitHub Repository (Legacy):
+    https://github.com/luisdiogo98/ktane-bombDiffusal\nGitHub Repository (Legacy):
+    https://github.com/VFlyer/ktane-bombDiffusal\n\r\nAny problems/suggestions, feel
+    free to contact me on the KTaNE Discord @TheThirdMan. Join the KTaNE Discord here:
+    https://discord.gg/Fv7YEDj"
+  version: 1.4
   outputFolder: build
   previewImage: {fileID: 2800000, guid: f70330e9f0fa45a41b3383b68101c804, type: 3}
