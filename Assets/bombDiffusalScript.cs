@@ -828,7 +828,7 @@ public class bombDiffusalScript : MonoBehaviour
         modSelf.HandlePass();
     }
 
-    //twitch plays
+    //twitch plays handling, originally by eXish. 
     private bool inputIsValid(string cmd)
     {
         if (cmd.EqualsIgnoreCase("Main") || cmd.EqualsIgnoreCase("Destination") || cmd.EqualsIgnoreCase("Components"))
@@ -1070,13 +1070,16 @@ public class bombDiffusalScript : MonoBehaviour
                 bool directionR = rnd.value < 0.5f, successful = false;
                 if (!menus[1].activeSelf)
                 {
+                    /*
                     if (menus[2].activeSelf)
                     {
                         yield return null;
                         componentBack.OnInteract();
                     }
                     yield return null;
-                    destinationButton.OnInteract();
+                    destinationButton.OnInteract();*/
+                    yield return string.Format("sendtochaterror I am not at the menu for setting the destination. Open that up first before using this.");
+                    yield break;
                 }
                 for (int x = 0; x < 6 && !successful; x++)
                 {
@@ -1138,6 +1141,7 @@ public class bombDiffusalScript : MonoBehaviour
                 bool directionR = rnd.value < 0.5f, successful = false;
                 if (!menus[1].activeSelf)
                 {
+                    /*
                     if (menus[2].activeSelf)
                     {
                         yield return null;
@@ -1147,6 +1151,9 @@ public class bombDiffusalScript : MonoBehaviour
                     yield return null;
                     destinationButton.OnInteract();
                     yield return new WaitForSeconds(0.1f);
+                    */
+                    yield return string.Format("sendtochaterror I am not at the menu for setting the sector. Open destination up first before using this.");
+                    yield break;
                 }
                 for (int x = 0; x < 6 && !successful; x++)
                 {
@@ -1174,6 +1181,7 @@ public class bombDiffusalScript : MonoBehaviour
                 bool directionR = rnd.value < 0.5f, successful = false;
                 if (!menus[1].activeSelf)
                 {
+                    /*
                     if (menus[2].activeSelf)
                     {
                         yield return null;
@@ -1183,6 +1191,9 @@ public class bombDiffusalScript : MonoBehaviour
                     yield return null;
                     destinationButton.OnInteract();
                     yield return new WaitForSeconds(0.1f);
+                    */
+                    yield return string.Format("sendtochaterror I am not at the menu for setting the area. Open destination up first before using this.");
+                    yield break;
                 }
                 for (int x = 0; x < 25 && !successful; x++)
                 {
@@ -1224,6 +1235,7 @@ public class bombDiffusalScript : MonoBehaviour
                     }
                     if (!menus[2].activeSelf)
                     {
+                        /*
                         if (menus[1].activeSelf)
                         {
                             yield return null;
@@ -1233,6 +1245,9 @@ public class bombDiffusalScript : MonoBehaviour
                         yield return null;
                         componentButton.OnInteract();
                         yield return new WaitForSeconds(0.1f);
+                        */
+                        yield return string.Format("sendtochaterror I am not at the menu for setting the specified component. Open Components up first before using this.");
+                        yield break;
                     }
                     switch (parameters[0])
                     {
@@ -1322,6 +1337,7 @@ public class bombDiffusalScript : MonoBehaviour
                     }
                     if (!menus[2].activeSelf)
                     {
+                        /*
                         if (menus[1].activeSelf)
                         {
                             yield return null;
@@ -1331,6 +1347,9 @@ public class bombDiffusalScript : MonoBehaviour
                         yield return null;
                         componentButton.OnInteract();
                         yield return new WaitForSeconds(0.1f);
+                        */
+                        yield return string.Format("sendtochaterror I am not at the menu for cycling port types. Open Components up first before using this.");
+                        yield break;
                     }
                     bool directionR = intereptedDirection.EqualsIgnoreCase("l");
                     for (int x = 0; x < 14; x++)
@@ -1363,6 +1382,7 @@ public class bombDiffusalScript : MonoBehaviour
                     }
                     if (!menus[2].activeSelf)
                     {
+                        /*
                         if (menus[1].activeSelf)
                         {
                             yield return null;
@@ -1372,6 +1392,9 @@ public class bombDiffusalScript : MonoBehaviour
                         yield return null;
                         componentButton.OnInteract();
                         yield return new WaitForSeconds(0.1f);
+                        */
+                        yield return string.Format("sendtochaterror I am not at the menu for setting port types. Open Components up first before using this.");
+                        yield break;
                     }
                     bool directionR = rnd.value < 0.5f, successful = false;
                     for (int x = 0; x < 14 && !successful; x++)
