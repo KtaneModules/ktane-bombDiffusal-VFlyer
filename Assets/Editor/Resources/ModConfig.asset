@@ -22,10 +22,8 @@ MonoBehaviour:
     by EpicToast\r\nOriginally implemented by TheThirdMan\r\nReuploaded and Maintained
     by VFlyer\nmoduleID: bombDiffusal\r\n\r\nManual HTML: https://ktane.timwi.de/HTML/Bomb%20Diffusal.html\r\nManual
     PDF: https://ktane.timwi.de/PDF/Bomb%20Diffusal.pdf\r\n\r\nGitHub Repository (Legacy):
-    https://github.com/luisdiogo98/ktane-bombDiffusal\nGitHub Repository (Legacy):
-    https://github.com/VFlyer/ktane-bombDiffusal\n\r\nAny problems/suggestions, feel
-    free to contact me on the KTaNE Discord @TheThirdMan. Join the KTaNE Discord here:
-    https://discord.gg/Fv7YEDj"
-  version: 1.4
+    https://github.com/luisdiogo98/ktane-bombDiffusal\nGitHub Repository (Reupload):
+    https://github.com/VFlyer/ktane-bombDiffusal\n"
+  version: 1.5
   outputFolder: build
   previewImage: {fileID: 2800000, guid: f70330e9f0fa45a41b3383b68101c804, type: 3}

@@ -829,7 +829,7 @@ public class bombDiffusalScript : MonoBehaviour
     }
 
     //twitch plays handling, originally by eXish. 
-    private bool inputIsValid(string cmd)
+    /**private bool inputIsValid(string cmd)
     {
         if (cmd.EqualsIgnoreCase("Main") || cmd.EqualsIgnoreCase("Destination") || cmd.EqualsIgnoreCase("Components"))
         {
@@ -853,6 +853,54 @@ public class bombDiffusalScript : MonoBehaviour
             return true;
         }
         return false;
+    }*/
+    private int getShortestPath(int start, int end, int min, int max)
+    {
+        int ct1 = 0, ct2 = 0;
+        int temp = start;
+        while (start != end)
+        {
+            start++;
+            ct2++;
+            if (min == -1 && max == -1)
+            {
+                if (start % 10 == 5)
+                    start += 5;
+                if (start % 10 == 9)
+                    start -= 5;
+                if (start % 100 / 10 == 5)
+                    start = start / 100 * 100;
+                if (start % 100 / 10 == 9)
+                    start = (start / 100) * 100 + 144;
+            }
+            else if (start > max)
+                start = min;
+        }
+        start = temp;
+        while (start != end)
+        {
+            start--;
+            ct1++;
+            if (min == -1 && max == -1)
+            {
+                if (start % 10 == 5)
+                    start += 5;
+                if (start % 10 == 9)
+                    start -= 5;
+                if (start % 100 / 10 == 5)
+                    start = start / 100 * 100;
+                if (start % 100 / 10 == 9)
+                    start = (start / 100) * 100 + 144;
+            }
+            else if (start < min)
+                start = max;
+        }
+        if (ct1 < ct2)
+            return 0;
+        else if (ct1 > ct2)
+            return 1;
+        else
+            return rnd.Range(0, 2);
     }
     IEnumerator TwitchHandleForcedSolve()
     {
@@ -865,23 +913,27 @@ public class bombDiffusalScript : MonoBehaviour
                     if (menus[2].activeSelf)
                     {
                         componentBack.OnInteract();
-                        yield return null;
+                        yield return new WaitForSeconds(0.1f);
                     }
                     destinationButton.OnInteract();
-                    yield return null;
+                    yield return new WaitForSeconds(0.1f);
                 }
+                KMSelectable[] sectorBtns = { prevSector, nextSector };
+                KMSelectable[] areaBtns = { prevArea, nextArea };
+                KMSelectable btn = sectorBtns[getShortestPath(selectedDestination / 100, goalDestination / 100, 1, 6)];
                 while (goalDestination / 100 != selectedDestination / 100)
                 {
-                    nextSector.OnInteract();
-                    yield return null;
+                    btn.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
                 }
+                btn = areaBtns[getShortestPath(selectedDestination, goalDestination, -1, -1)];
                 while (goalDestination % 100 != selectedDestination % 100)
                 {
-                    nextArea.OnInteract();
-                    yield return null;
+                    btn.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
                 }
                 destinationBack.OnInteract();
-                yield return null;
+                yield return new WaitForSeconds(0.1f);
             }
 
             if (goalBatteries != selectedBatteries || goalIndicators != selectedIndicators || goalManuals != selectedManuals || selectedPortIdx != goalPortIdx)
@@ -891,10 +943,10 @@ public class bombDiffusalScript : MonoBehaviour
                     if (menus[1].activeSelf)
                     {
                         destinationBack.OnInteract();
-                        yield return null;
+                        yield return new WaitForSeconds(0.1f);
                     }
                     componentButton.OnInteract();
-                    yield return null;
+                    yield return new WaitForSeconds(0.1f);
                 }
                 while (goalBatteries != selectedBatteries)
                 {
@@ -902,7 +954,7 @@ public class bombDiffusalScript : MonoBehaviour
                         addBattery.OnInteract();
                     else
                         subBattery.OnInteract();
-                    yield return null;
+                    yield return new WaitForSeconds(0.1f);
                 }
                 while (goalIndicators != selectedIndicators)
                 {
@@ -910,7 +962,7 @@ public class bombDiffusalScript : MonoBehaviour
                         addIndicator.OnInteract();
                     else
                         subIndicator.OnInteract();
-                    yield return null;
+                    yield return new WaitForSeconds(0.1f);
                 }
                 while (goalManuals != selectedManuals)
                 {
@@ -918,22 +970,24 @@ public class bombDiffusalScript : MonoBehaviour
                         addManual.OnInteract();
                     else
                         subManual.OnInteract();
-                    yield return null;
+                    yield return new WaitForSeconds(0.1f);
                 }
+                KMSelectable[] portBtns = { prevPort, nextPort };
+                KMSelectable btn = portBtns[getShortestPath(selectedPortIdx, goalPortIdx, 0, ports.Length - 1)];
                 while (selectedPortIdx != goalPortIdx)
                 {
-                    nextPort.OnInteract();
-                    yield return null;
+                    btn.OnInteract();
+                    yield return new WaitForSeconds(0.1f);
                 }
                 componentBack.OnInteract();
-                yield return null;
+                yield return new WaitForSeconds(0.1f);
             }
 
             yield return null;
         }
 
         goButton.OnInteract();
-        yield return true;
+        while (!stamp.activeSelf) yield return true;
     }
 
     #pragma warning disable 414
@@ -961,12 +1015,12 @@ public class bombDiffusalScript : MonoBehaviour
             if (menus[1].activeSelf)
             {
                 destinationBack.OnInteract();
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.1f);
             }
             else if (menus[2].activeSelf)
             {
                 componentBack.OnInteract();
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.1f);
             }
             goButton.OnInteract();
             if (menus[3].activeSelf)
@@ -1369,7 +1423,7 @@ public class bombDiffusalScript : MonoBehaviour
                         {"PS/2",  new string[] { "PS2" } },
                         {"Stereo RCA",  new string[] { "StereoRCA", "RCA" } },
                         {"Component Video",  new string[] { "ComponentVideo" } },
-                        {"AC Power",  new string[] { "AC", "AC Power" } },
+                        {"AC Power",  new string[] { "AC", "ACPower" } },
                         {"Composite Video",  new string[] { "CompositeVideo" } },
                         };
                     foreach (KeyValuePair<string, string[]> altPortName in alternativePortIntereptations)
