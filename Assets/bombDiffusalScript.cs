@@ -75,7 +75,6 @@ public class bombDiffusalScript : MonoBehaviour
     string[] ports;
     string licenseNo;
     List<int> deliveryNo;
-    int[] goalDelivery;
     int goalDestination;
     int goalBatteries;
     int goalIndicators;
@@ -294,6 +293,26 @@ public class bombDiffusalScript : MonoBehaviour
     void CheckSolution()
     {
         Audio.PlaySoundAtTransform("button", transform);
+
+        var isAllFilledOut = true;
+        var missingDebug = new List<string>();
+        if (selectedDestination == -1)
+        {
+            isAllFilledOut = false;
+            missingDebug.Add("Destination");
+        }
+        if (selectedManuals == -1 || selectedPortIdx == -1 || selectedIndicators == -1 || selectedBatteries == -1)
+        {
+            isAllFilledOut = false;
+            missingDebug.Add("Components");
+        }
+
+        if (!isAllFilledOut)
+        {
+            modSelf.HandleStrike();
+            Debug.LogFormat("[Bomb Diffusal #{0}] Strike! Infomation is missing from the following menus: [{1}]", moduleId, missingDebug.Join(", "));
+            return;
+        }
 
         bool isAllCorrect = true;
 
@@ -1097,7 +1116,10 @@ public class bombDiffusalScript : MonoBehaviour
         else
         {
             if (Regex.IsMatch(command, @"^set\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-                command = command.Substring(4);
+            {
+                command = command.Substring(3).Trim();
+                intereptedCommand = intereptedCommand.ToLowerInvariant().Replace("set", "").Trim();
+            }
             if (Regex.IsMatch(command, @"^destination\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 Dictionary<string, string[]> alternativeSectorNames = new Dictionary<string, string[]>() {
@@ -1105,7 +1127,7 @@ public class bombDiffusalScript : MonoBehaviour
                                 {"USA #2",  new string[] { "USA 2", "USA#2", "USA2" } },
                                 {"Rest of America",  new string[] { "RestOfAmerica", "RestOf America", "Rest OfAmerica" } },
                             };
-                string[] intereptedParts = intereptedCommand.Substring(12).Split(new char[] { ',', ';' });
+                string[] intereptedParts = intereptedCommand.ToLowerInvariant().Replace("destination","").Trim().Split(new char[] { ',', ';' });
                 if (intereptedParts.Length != 2)
                 {
                     yield return string.Format("sendtochaterror You provided {0} than 2 pieces of infomation for setting the destination. I expected exactly 2, the sector name and the area name.", intereptedParts.Length > 2 ? "more" : "less");
@@ -1405,8 +1427,8 @@ public class bombDiffusalScript : MonoBehaviour
                         yield return string.Format("sendtochaterror I am not at the menu for cycling port types. Open Components up first before using this.");
                         yield break;
                     }
-                    bool directionR = intereptedDirection.EqualsIgnoreCase("l");
-                    for (int x = 0; x < 14; x++)
+                    bool directionR = intereptedDirection.EqualsIgnoreCase("r");
+                    for (int x = 0; x < 13; x++)
                     {
                         yield return null;
                         if (directionR)
