@@ -1009,7 +1009,8 @@ public class bombDiffusalScript : MonoBehaviour
         while (!stamp.activeSelf) yield return true;
     }
 
-    #pragma warning disable 414
+#pragma warning disable 414
+    bool TwitchShouldCancelCommand;
     private readonly string TwitchHelpMessage = "Open the specified menu with \"!{0} open Main/Destination/Components\" Go back to the main menu with \"!{0} back\"\n" +
         "Set both the destination's sector and area with \"!{0} set destination <Sector Name>;<Area Name>\" (',' can be used instead of ';'.)"
         + "Set just the destination's sector or area with \"!{0} set sector/area <Sector Name>/<Area Name>\""
@@ -1428,14 +1429,23 @@ public class bombDiffusalScript : MonoBehaviour
                         yield break;
                     }
                     bool directionR = intereptedDirection.EqualsIgnoreCase("r");
-                    for (int x = 0; x < 13; x++)
+                    var HL = directionR ? (nextPort.Highlight.transform.Find("Highlight(Clone)") ?? nextPort.transform) : (prevPort.Highlight.transform.Find("Highlight(Clone)") ?? prevPort.transform);
+                    for (int x = 0; x < 13 && !TwitchShouldCancelCommand; x++)
                     {
                         yield return null;
+                        HL.gameObject.SetActive(true);
                         if (directionR)
                             nextPort.OnInteract();
                         else
                             prevPort.OnInteract();
-                        yield return "trywaitcancel 1.0 Cycling ports has been canceled viva request.";
+                        yield return new WaitForSeconds(1f);
+                        HL.gameObject.SetActive(false);
+                    }
+                    if (TwitchShouldCancelCommand)
+                    {
+                        TwitchShouldCancelCommand = false;
+                        yield return "sendtochat Port cycling has been canceled viva TP request to cancel, {0}.";
+                        yield break;
                     }
                 }
                 else if (Regex.IsMatch(intereptedCommand, @"^port\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
