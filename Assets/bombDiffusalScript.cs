@@ -1014,7 +1014,7 @@ public class bombDiffusalScript : MonoBehaviour
     private readonly string TwitchHelpMessage = "Open the specified menu with \"!{0} open Main/Destination/Components\" Go back to the main menu with \"!{0} back\"\n" +
         "Set both the destination's sector and area with \"!{0} set destination <Sector Name>;<Area Name>\" (',' can be used instead of ';'.)"
         + "Set just the destination's sector or area with \"!{0} set sector/area <Sector Name>/<Area Name>\""
-        + "Set the specified components with \"!{0} set component batteries/manuals/indicators #\""
+        + "Set the specified components with \"!{0} set component batteries/manuals/indicators/port #/(port name)\""
         + "Cycle the options on the ports left or right with \"!{0} component cycleports left/right\" \"set\" is optional. To check on the ports, you may use \"!{0} tilt r\" to check. (This is a general TP command.) Submit the configurations with \"!{0} go/submit/send\"";
 #pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
