@@ -1220,6 +1220,18 @@ public class bombDiffusalScript : MonoBehaviour
             UseFangysHandler = true;
             TwitchHelpMessage = TPHelpMessageFangy;
             yield return "sendtochat {0}, Bomb Diffusal (#{1}) has switched to using Fangy's TP handling. Check the help message on how to use Fangy's handler.";
+            if (!menus[0].activeSelf)
+            {
+                yield return null;
+                if (menus[1].activeSelf)
+                {
+                    destinationBack.OnInteract();
+                }
+                else if (menus[2].activeSelf)
+                {
+                    componentBack.OnInteract();
+                }
+            }
             yield break;
         }
         if (Regex.IsMatch(command, @"^(go|submit|send)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
