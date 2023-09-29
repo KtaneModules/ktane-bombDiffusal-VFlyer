@@ -1324,7 +1324,7 @@ public class bombDiffusalScript : MonoBehaviour
             if (Regex.IsMatch(command, @"^set\s", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 command = command.Substring(3).Trim();
-                intereptedCommand = intereptedCommand.ToLowerInvariant().Replace("set", "").Trim();
+                intereptedCommand = intereptedCommand.ToLowerInvariant().Substring(3).Trim();
             }
             if (Regex.IsMatch(command, @"^destination\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
